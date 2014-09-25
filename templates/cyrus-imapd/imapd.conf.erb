@@ -170,9 +170,6 @@ auditlog: 1
 <% if enable_notify then -%>
 event_content_inclusion_mode: standard
 event_content_size: 0
-# Only available with fastmail patches
-#event_extra_params: bodyStructure clientAddress diskUsed flagNames messageSize messages modseq service timestamp uidnext vnd.cmu.midset vnd.cmu.unseenMessages vnd.cmu.envelope vnd.fastmail.clientId vnd.fastmail.sessionId vnd.fastmail.cid vnd.cmu.mbtype
-# Stock cyrus imap git origin/master head
 event_extra_params: bodyStructure clientAddress diskUsed flagNames messageSize messages modseq service timestamp uidnext vnd.cmu.midset vnd.cmu.unseenMessages vnd.cmu.envelope
 event_groups: message quota flags access mailbox
 event_notifier: external
