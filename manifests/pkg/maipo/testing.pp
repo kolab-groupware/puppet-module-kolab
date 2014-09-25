@@ -1,4 +1,4 @@
-class kolab::pkg::redhat::maipo::testing inherits kolab::pkg::redhat::maipo {
-    include "kolab::pkg::redhat::maipo::testing::${kolab_version_name}"
+class kolab::pkg::maipo::testing inherits kolab::pkg::maipo {
+    include "kolab::pkg::maipo::testing::${kolab_version_name}"
 
 }

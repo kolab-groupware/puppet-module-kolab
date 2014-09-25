@@ -1,4 +1,4 @@
-class kolab::pkg::redhat::santiago::production::kolab_13 inherits kolab::pkg::redhat::santiago::production {
+class kolab::pkg::santiago::production::kolab_13 inherits kolab::pkg::santiago::production {
     $altermime_version = "0.3.10-3.el6"
     $amavisd_new_version = "2.8.0-8.el6"
     $apr_util_ldap_version = "1.5.2-2.el6.kolab_13"

@@ -1,3 +1,3 @@
-class kolab::pkg::redhat::santiago::production inherits kolab::pkg::redhat::santiago {
-    include "kolab::pkg::redhat::santiago::production::${kolab_version_name}"
+class kolab::pkg::santiago::production inherits kolab::pkg::santiago {
+    include "kolab::pkg::santiago::production::${kolab_version_name}"
 }

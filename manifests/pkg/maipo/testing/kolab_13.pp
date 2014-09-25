@@ -1,2 +1,2 @@
-class kolab::pkg::redhat::maipo::testing::kolab_13 inherits kolab::pkg::redhat::maipo::testing {
+class kolab::pkg::maipo::testing::kolab_13 inherits kolab::pkg::maipo::testing {
 }

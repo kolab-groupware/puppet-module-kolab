@@ -1,4 +1,4 @@
-class kolab::pkg::redhat::maipo::production::kolab_14 inherits kolab::pkg::redhat::maipo::production {
+class kolab::pkg::maipo::production::kolab_14 inherits kolab::pkg::maipo::production {
     $altermime_version = "0.3.10-3.el6"
     $amavisd_new_version = "2.8.0-8.el6"
     $apr_util_version = "1.5.3-3.el6.kolab_14"
