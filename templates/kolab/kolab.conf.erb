@@ -1,0 +1,192 @@
+<%
+    kolab_primary_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
+    if !@kolab_primary_domain then
+        kolab_primary_domain = domain
+    end
+-%>
+
+# Managed by Puppet, from modules/kolab/templates/kolab/kolab.conf.erb
+
+[kolab]
+imap_backend = cyrus-imap
+sync_interval = 300
+default_locale = <%= scope.lookupvar("kolab::params::kolab_default_locale") %>
+auth_mechanism = ldap
+primary_domain = <%= kolab_primary_domain %>
+policy_uid = <%= scope.lookupvar("kolab::params::kolab_policy_uid") %>
+
+primary_mail = %(givenname)s.%(surname)s@%(domain)s
+secondary_mail = {
+        0: {
+                "{0}.{1}@{2}": "format('%(givenname)s'[0:1].capitalize(), '%(surname)s', '%(domain)s')"
+            },
+    }
+
+default_quota = 1048576
+
+autocreate_folders = {
+        'Calendar': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "event.default",
+                        '/shared/vendor/kolab/folder-type': "event",
+                    },
+            },
+        'Configuration': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "configuration.default",
+                        '/shared/vendor/kolab/folder-type': "configuration",
+                    },
+            },
+        'Contacts': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "contact.default",
+                        '/shared/vendor/kolab/folder-type': "contact",
+                    },
+            },
+        'Drafts': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "mail.drafts",
+                    },
+            },
+        'Files': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "file.default",
+                    },
+            },
+        'Journal': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "journal.default",
+                        '/shared/vendor/kolab/folder-type': "journal",
+                    },
+            },
+        'Notes': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': 'note.default',
+                        '/shared/vendor/kolab/folder-type': 'note',
+                    },
+            },
+        'Sent': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "mail.sentitems",
+                    },
+            },
+        'Spam': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "mail.junkemail",
+                    },
+            },
+        'Tasks': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "task.default",
+                        '/shared/vendor/kolab/folder-type': "task",
+                    },
+            },
+        'Trash': {
+                'annotations': {
+                        '/private/vendor/kolab/folder-type': "mail.wastebasket",
+                    },
+            },
+        }
+
+[imap]
+virtual_domains = userid
+
+[ldap]
+ldap_uri = <%= scope.lookupvar('kolab::params::ldap_uri') %>
+supported_controls = 0,2,3
+base_dn = <%= scope.lookupvar('kolab::params::ldap_root_dn') %>
+
+auth_cache_uri = <%= scope.lookupvar('kolab::params::kolab_cache_sql_uri') %>
+
+bind_dn = <%= scope.lookupvar('kolab::params::ldap_bind_dn') %>
+bind_pw = <%= scope.lookupvar('kolab::params::ldap_bind_pw') %>
+service_bind_dn = <%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>
+service_bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
+
+user_base_dn = <%= scope.lookupvar('kolab::params::ldap_root_dn') %>
+user_filter = (&(objectclass=inetorgperson)(!(objectclass=nstombstone)))
+user_scope = sub
+
+kolab_user_base_dn = <%= scope.lookupvar('kolab::params::ldap_root_dn') %>
+kolab_user_filter = (objectclass=kolabinetorgperson)
+
+group_base_dn = <%= scope.lookupvar('kolab::params::ldap_root_dn') %>
+group_filter = (&(entrydn=*,ou=Groups,*)(|(objectclass=groupofuniquenames)(objectclass=groupofurls))(!(objectclass=nstombstone)))
+group_scope = sub
+
+resource_base_dn = <%= scope.lookupvar('kolab::params::ldap_root_dn') %>
+resource_filter = (&(entrydn=*,ou=Resources,*)(|(&(objectclass=kolabsharedfolder)(kolabfoldertype=event)(mail=*))(objectclass=groupofuniquenames)(objectclass=groupofurls))(!(objectclass=nstombstone)))
+
+sharedfolder_base_dn = ou=Shared Folders,<%= scope.lookupvar('kolab::params::ldap_root_dn') %>
+sharedfolder_filter = (&(objectclass=kolabsharedfolder)(!%(group_filter)s)(!(objectclass=nstombstone)))
+sharedfolder_acl_entry_attribute = acl
+
+<%
+    ldap_domain_base_dn = scope.lookupvar('kolab::params::ldap_domain_base_dn')
+    if !@ldap_domain_base_dn then
+        ldap_domain_base_dn = "cn=kolab,cn=config"
+    end
+-%>
+domain_base_dn = <%= ldap_domain_base_dn %>
+domain_filter = (&(objectclass=domainrelatedobject)(associatedDomain=*))
+domain_name_attribute = associateddomain
+domain_rootdn_attribute = inetdomainbasedn
+
+auth_attributes = mail, uid
+mail_attributes = mail, alias
+mailserver_attribute = mailhost
+quota_attribute = mailquota
+unique_attribute = nsuniqueid
+
+[wallace]
+footer_html = /etc/kolab/footer.html
+footer_text = /etc/kolab/footer.text
+modules = invitationpolicy, resources
+kolab_invitation_policy = ACT_ACCEPT_IF_NO_CONFLICT, ACT_UPDATE, ACT_MANUAL
+
+[kolab_smtp_access_policy]
+cache_retention = 86400
+cache_uri = <%= scope.lookupvar('kolab::params::kolab_cache_sql_uri') %>
+address_search_attrs = mail, alias
+sender_header = True
+xsender_header = False
+alias_sender_header = False
+delegate_sender_header = True
+sender_header_enc_key = 'simple'
+
+[cyrus-sasl]
+result_attribute = mail
+
+[cyrus-imap]
+uri = <%= scope.lookupvar('kolab::params::imap_uri') %>
+admin_login = <%= scope.lookupvar('kolab::params::imap_admin_login') %>
+admin_password = <%= scope.lookupvar('kolab::params::imap_admin_password') %>
+
+[kolab_wap]
+<%
+    kolab_webadmin_api_uri = scope.lookupvar('kolab::params::kolab_webadmin_api_uri')
+    if @kolab_webadmin_api_uri then
+-%>
+api_url = <%= scope.lookupvar('kolab::params::kolab_webadmin_api_uri') %>
+<%
+    end
+-%>
+<%
+    kolab_webadmin_memcache_hosts = scope.lookupvar('kolab::params::kolab_webadmin_memcache_hosts')
+    if @kolab_webadmin_memcache_hosts then
+-%>
+memcache_hosts = <%= scope.lookupvar('kolab::params::kolab_webadmin_memcache_hosts').join(', ') %>
+<%
+    end
+-%>
+skin = default
+sql_uri = <%= scope.lookupvar('kolab::params::kolab_webadmin_sql_uri') %>
+ssl_verify_host = <%= scope.lookupvar('kolab::params::ssl_verify_host') %>
+ssl_verify_peer = <%= scope.lookupvar('kolab::params::ssl_verify_peer') %>
+login_filter = (&(|(mail=%s)(mail=%U@%d))(objectclass=inetorgperson))
+session_timeout = 1440
+memcache_pconnect = true
+<% if environment == "development" || environment == "testing" -%>
+debug_mode = trace
+<% end -%>
+

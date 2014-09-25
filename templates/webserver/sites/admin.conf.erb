@@ -1,0 +1,150 @@
+# Managed by Puppet
+# from modules/kolab/templates/webserver/sites/webmail.conf.erb
+#
+<%
+    vhost_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
+
+    if !@vhost_domain then
+        vhost_domain = @domain
+    end
+-%>
+<VirtualHost *:80>
+    ServerName admin.<%= vhost_domain %>
+    DocumentRoot /usr/share/kolab-webadmin/public_html/
+
+    ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+    RewriteEngine On
+    RewriteRule ^/(.*)$ https://admin.<%= vhost_domain -%>/$1 [R,L]
+
+    <Directory "/usr/share/kolab-webadmin/public_html/">
+        <IfModule mod_rewrite.c>
+            RewriteEngine on
+
+            RewriteBase /
+
+            # Rewrite URLs of the form 'x' to the form 'index.php?q=x'.
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_URI} !=/favicon.ico
+            RewriteRule ^api/(.*)\.(.*)$ api/index.php?service=$1&method=$2 [L,QSA]
+
+        </IfModule>
+
+        AddDefaultCharset   UTF-8
+
+        DirectoryIndex index.php
+        AllowOverride All
+        <ifModule mod_authz_core.c>
+            Require all granted
+        </ifModule>
+        <ifModule !mod_authz_core.c>
+            Order Allow,Deny
+            Allow from All
+        </ifModule>
+    </Directory>
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName admin.<%= vhost_domain %>
+    DocumentRoot /usr/share/kolab-webadmin/public_html/
+
+    ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/admin.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/admin.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/admin.<%= vhost_domain -%>.ca.cert
+
+    <Directory "/usr/share/kolab-webadmin/public_html/">
+        <IfModule mod_rewrite.c>
+            RewriteEngine on
+
+            RewriteBase /
+
+            # Rewrite URLs of the form 'x' to the form 'index.php?q=x'.
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_URI} !=/favicon.ico
+            RewriteRule ^api/(.*)\.(.*)$ api/index.php?service=$1&method=$2 [L,QSA]
+
+        </IfModule>
+
+        AddDefaultCharset   UTF-8
+
+        DirectoryIndex index.php
+        AllowOverride All
+
+        <ifModule mod_authz_core.c>
+            Require all granted
+        </ifModule>
+
+        <ifModule !mod_authz_core.c>
+            Order Allow,Deny
+            Allow from All
+        </ifModule>
+
+    </Directory>
+
+    <Directory "/usr/share/kolab-webadmin/public_html/api/">
+        <ifModule mod_security2.c>
+            # msg "Blind SQL Injection Attack"
+            SecRuleRemoveById 950007
+
+            # msg "SQL Injection Attack: SQL Tautology Detected."
+            SecRuleRemoveById 950901
+
+            # msg "GET or HEAD Request with Body Content."
+            SecRuleRemoveById 960011
+
+            # No Accept: header in API requests
+            # msg "Request Missing an Accept Header"
+            SecRuleRemoveById 960015
+
+            # msg "SQL Character Anomaly Detection Alert - Repetative Non-Word Characters"
+            # Warning. Pattern match "\\\\W{4,}" at ARGS:{"givenname":"Jeroen","mail":"jeroen.vanmeeuwen@klab.cc","mailalternateaddress":"vanmeeuwen@kolabsys.com","preferredlanguage":"en_US","sn":"van Meeuwen","cn":"Jeroen van Meeuwen","displayname":"van Meeuwen, Jeroen","uid":"vanmeeuwen","objectclass":["inetorgperson","kolabinetorgperson","mailrecipient","organizationalperson","person","top"],"userpassword":"{SSHA}W420Y31qKAbHSx okfCpkscFD DQBmPi0ijpMQ.
+            SecRuleRemoveById 960024
+
+            # msg msg "IE XSS Filters - Attack Detected."
+            SecRuleRemoveById 973333
+
+            # Quotes in JSON:
+            # msg "Restricted SQL Character Anomaly Detection Alert - Total # of special characters exceeded"
+            SecRuleRemoveById 981173
+            SecRuleRemoveById 981204
+
+            # msg "Detects classic SQL injection probings 2/2"
+            SecRuleRemoveById 981243
+
+            # msg "SQL Injection Attack: SQL Tautology Detected."
+            # data "Matched Data: c=c found within ARGS:{\\x22list\\x22:[\\x22cn: kolab-admin,dc=klab,dc=cc\\x22
+            SecRuleRemoveById 950901
+
+            # msg "Detects classic SQL injection probings 1/2"
+            SecRuleRemoveById 981242
+
+            # msg "Detects basic SQL authentication bypass attempts 2/3"
+            SecRuleRemoveById 981245
+
+            # msg "Detects basic SQL authentication bypass attempts 3/3"
+            SecRuleRemoveById 981246
+
+            # msg "Detects MySQL comment-/space-obfuscated injections and backtick termination"
+            SecRuleRemoveById 981257
+        </ifModule>
+    </Directory>
+</VirtualHost>

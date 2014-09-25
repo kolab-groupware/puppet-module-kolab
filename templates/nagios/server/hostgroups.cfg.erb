@@ -1,0 +1,52 @@
+# Managed with Puppet
+
+<%
+    ['development','testing','production'].each do |environ|
+
+        all_servers = Array.new()
+
+        [
+                'lhm_klab_cc-kolab::Imap::Backend',
+                'lhm_klab_cc-kolab::Imap::Frontend',
+                'lhm_klab_cc-kolab::Imap::Full',
+                'lhm_klab_cc-kolab::Imap::Mupdate',
+                'lhm_klab_cc-kolab::Mx',
+                'lhm_klab_cc-kolab::Webserver::Wap',
+                'lhm_klab_cc-kolab::Webserver::Webclient',
+                'lhm_klab_cc-memcached'
+            ].each do |pclass|
+
+            servers = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+
+            all_servers += servers
+            all_servers = all_servers.sort.uniq
+
+            if servers.length > 0 then -%>
+define hostgroup {
+    hostgroup_name  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    members         <%= servers.join(',') %>
+}
+<%
+            end
+        end
+
+        if all_servers.length > 0 then -%>
+define hostgroup {
+    hostgroup_name  <%= environ %>
+    members         <%= all_servers.join(',') %>
+}
+<%
+        end
+
+        mysql_servers = scope.function_nodes_with_class_in_environment([environ, "Mysql::Server"]).uniq.sort
+
+        if mysql_servers.length > 0 then -%>
+define hostgroup {
+    hostgroup_name  <%= environ.capitalize -%>::Mysql::Server
+    members         <%= mysql_servers.join(',') %>
+}
+<%
+        end
+    end
+-%>
+

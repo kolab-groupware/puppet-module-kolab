@@ -1,0 +1,194 @@
+# Managed by Puppet
+<%
+    enable_ptloader = scope.lookupvar("kolab::params::imap_enable_ptloader")
+    if enable_ptloader != true then
+        enable_ptloader = false
+    end
+
+    backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).sort.uniq
+    frontends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::frontend']).sort.uniq
+    mupdate = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::mupdate']).sort.uniq
+
+    if backends.include?(fqdn) || classes.include?('kolab::imap::backend') then
+        role = "backend"
+    elsif frontends.include?(fqdn) || classes.include?('kolab::imap::frontend') then
+        role = "frontend"
+    elsif mupdate.include?(fqdn) || classes.include?('kolab::imap::mupdate') then
+        role = "mupdate"
+    else
+        role = "full"
+    end
+
+    socket_path = scope.lookupvar("kolab::params::imap::imap_socket_path")
+    if !@socket_path then
+        socket_path = "/var/lib/imap/socket"
+    end
+
+    configdir = scope.lookupvar("kolab::params::imap::imap_configdir")
+    duplicate_db_path = scope.lookupvar("kolab::params::imap::imap_duplicate_db_path")
+    ptscache_db_path = scope.lookupvar("kolab::params::imap::imap_ptscache_db_path")
+    statuscache_db_path = scope.lookupvar("kolab::params::imap::imap_statuscache_db_path")
+    temp_path = scope.lookupvar("kolab::params::imap::imap_temp_path")
+    tlscache_db_path = scope.lookupvar("kolab::params::imap::imap_tlscache_db_path")
+
+    sievedir = scope.lookupvar("kolab::params::imap::imap_sievedir")
+    if !@sievedir then
+        if !@configdir then
+            configdir = "/var/lib/imap"
+            sievedir = configdir + "/sieve"
+        else
+            sievedir = configdir + "/sieve"
+        end
+    end
+
+    storage_meta_base_path = scope.lookupvar("kolab::params::imap::imap_storage_meta_base_path")
+
+    split_metadata = true
+
+    if storage_meta_base_path == "" || !@storage_meta_base_path then
+        split_metadata = false
+    elsif storage_meta_base_path == "undefined" then
+        split_metadata = false
+    end
+
+    storage_spool_base_path = scope.lookupvar("kolab::params::imap::imap_storage_spool_base_path")
+
+    partitions = scope.lookupvar("kolab::params::imap::imap_storage_partitions")
+    if !partitions.kind_of?(Array) then
+        partitions = [ "default" ]
+    end
+%>
+<% if role == "backend" then -%>
+configdirectory: <%= configdir %>
+defaultpartition: default
+<% if split_metadata then -%>
+metapartition_files: annotations cache expunge header index squat
+<% end -%>
+<% partitions.each do |p| -%>
+partition-<%= p -%>: <%= storage_spool_base_path -%>/<%= p %>
+
+<% if split_metadata then -%>
+metapartition-<%= p -%>: <%= storage_meta_base_path -%>/<%= p %>
+# Additional settings required by fdc0eb3d
+metadir-cache-<%= p -%>: <%= storage_meta_base_path -%>/<%= p %>
+# Not used
+#metadir-expunge-<%= p -%>: <%= storage_meta_base_path -%>/<%= p %>
+metadir-header-<%= p -%>: <%= storage_meta_base_path -%>/<%= p %>
+metadir-index-<%= p -%>: <%= storage_meta_base_path -%>/<%= p %>
+metadir-squat-<%= p -%>: <%= storage_meta_base_path -%>/<%= p %>
+<% end -%>
+<% end -%>
+sievedir: <%= sievedir %>
+<% elsif (role == "frontend" || role == "mupdate") then -%>
+configdirectory: <%= configdir %>
+sievedir: <%= sievedir %>
+<% else -%>
+configdirectory: <%= configdir %>
+partition-default: <%= storage_spool_base_path %>
+sievedir: <%= sievedir %>
+<% end -%>
+
+sendmail: /usr/sbin/sendmail
+admins: cyrus-admin
+sasl_pwcheck_method: saslauthd
+sasl_mech_list: PLAIN LOGIN
+allowplaintext: no
+
+<% if defined?(enable_ptloader) && enable_ptloader then -%>
+auth_mech: pts
+pts_module: ldap
+ptloader_sock: <%= socket_path -%>/ptsock
+ldap_sasl: 0
+ldap_uri: <%= scope.lookupvar("kolab::params::ldap_uri") %>
+ldap_base: <%= scope.lookupvar("kolab::params::ldap_root_dn") %>
+ldap_scope: sub
+ldap_bind_dn: <%= scope.lookupvar("kolab::params::ldap_service_bind_dn") %>
+ldap_password: <%= scope.lookupvar("kolab::params::ldap_service_bind_pw") %>
+ldap_filter: (|(&(uid=<%= scope.lookupvar("kolab::params::imap_admin_login") %>)(uid=%U))(&(objectclass=kolabinetorgperson)(|(uid=%U)(mail=%u))))
+ldap_user_attribute: mail
+ldap_group_base: <%= scope.lookupvar("kolab::params::ldap_root_dn") %>
+ldap_group_filter: (&(cn=%u)(objectclass=ldapsubentry)(objectclass=nsroledefinition))
+ldap_group_scope: sub
+ldap_member_base: <%= scope.lookupvar("kolab::params::ldap_root_dn") %>
+ldap_member_method: attribute
+ldap_member_attribute: nsroledn
+ldap_restart: 1
+ldap_timeout: 10
+ldap_time_limit: 10
+<% end -%>
+
+tls_cert_file: /etc/pki/tls/private/<%= domain %>.pem
+tls_key_file: /etc/pki/tls/private/<%= domain %>.pem
+tls_ca_file: /etc/pki/tls/certs/<%= domain %>.ca.cert
+tls_cipher_list: EECDH+AES:EDH+AES:-SHA1:EECDH+RC4:EDH+RC4:RC4-SHA:EECDH+AES256:EDH+AES256:AES256-SHA:!aNULL:!eNULL:!EXP:!LOW:!MD5
+
+<% if role == "frontend" then -%>
+# Disable mailbox referrals for all clients, as the referrals will point
+# addresses the client cannot reach.
+proxyd_disable_mailbox_referrals: 1
+
+<% if backends.length > 0 then -%>
+serverlist: <%= backends.join(" ") -%>
+<% end -%>
+<% end -%>
+
+unixhierarchysep: 1
+virtdomains: userid
+sieve_extensions: fileinto reject envelope body vacation imapflags notify include regex subaddress relational copy date
+allowallsubscribe: 1
+anyoneuseracl: 0
+allowusermoves: 1
+altnamespace: 1
+annotation_definitions: /etc/imapd.annotations.conf
+hashimapspool: 1
+anysievefolder: 1
+fulldirhash: 0
+sieveusehomedir: 0
+sieve_allowreferrals: 0
+lmtp_downcase_rcpt: 1
+lmtp_fuzzy_mailbox_match: 1
+username_tolower: 1
+deletedprefix: DELETED
+delete_mode: delayed
+expunge_mode: delayed
+flushseenstate: 1
+postuser: shared
+
+syslog_prefix: cyrus-imapd
+<% if environment == "development" then %>
+debug: 1
+debug_command: /usr/bin/gdb /usr/lib/cyrus-imapd/%s %d
+chatty: 1
+#iolog: 1
+auditlog: 1
+event_content_inclusion_mode: standard
+event_content_size: 0
+# Only available with fastmail patches
+#event_extra_params: bodyStructure clientAddress diskUsed flagNames messageSize messages modseq service timestamp uidnext vnd.cmu.midset vnd.cmu.unseenMessages vnd.cmu.envelope vnd.fastmail.clientId vnd.fastmail.sessionId vnd.fastmail.cid vnd.cmu.mbtype
+# Stock cyrus imap git origin/master head
+event_extra_params: bodyStructure clientAddress diskUsed flagNames messageSize messages modseq service timestamp uidnext vnd.cmu.midset vnd.cmu.unseenMessages vnd.cmu.envelope
+event_groups: message quota flags access mailbox
+event_notifier: external
+sievenotifier: external
+notify_external: /usr/bin/bonnie-dealer
+<% end %>
+
+<% if (role == "backend" || role == "frontend" || role == "mupdate") -%>
+mupdate_config: standard
+mupdate_server: mupdate.<%= domain %>
+mupdate_port: 3905
+mupdate_authname: <%= scope.lookupvar("kolab::params::imap_admin_login") %>
+mupdate_username: <%= scope.lookupvar("kolab::params::imap_admin_login") %>
+mupdate_password: <%= scope.lookupvar("kolab::params::imap_admin_password") %>
+<% end -%>
+
+<% if role == "backend" then %>
+proxyservers: <%= scope.lookupvar("kolab::params::imap_admin_login") %>
+proxy_authname: <%= scope.lookupvar("kolab::params::imap_admin_login") %>
+proxy_password: <%= scope.lookupvar("kolab::params::imap_admin_password") %>
+<% elsif role == "frontend" then %>
+proxy_authname: <%= scope.lookupvar("kolab::params::imap_admin_login") %>
+proxy_password: <%= scope.lookupvar("kolab::params::imap_admin_password") %>
+<% end %>
+
+suppress_capabilities: METADATA

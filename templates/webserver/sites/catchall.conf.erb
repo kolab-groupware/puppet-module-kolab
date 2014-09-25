@@ -1,0 +1,321 @@
+# Managed by Puppet
+# from modules/kolab/templates/webserver/sites/webmail.conf.erb
+#
+<%
+    vhost_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
+
+    if !@vhost_domain then
+        vhost_domain = @domain
+    end
+-%>
+<VirtualHost *:80>
+    ServerName activesync.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://activesync.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/activesync.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/activesync.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName autodiscover.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://autodiscover.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/autodiscover.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/autodiscover.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName caldav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://caldav.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName carddav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://carddav.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName files.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/files.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/files.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName freebusy.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://freebusy.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/freebusy.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/freebusy.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName webdav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://webdav.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webdav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webdav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName webmail.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://webmail.<%= vhost_domain -%>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName activesync.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://activesync.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/activesync.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/activesync.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/activesync.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/activesync.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/activesync.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/activesync.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName autodiscover.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://autodiscover.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/autodiscover.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/autodiscover.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/autodiscover.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/autodiscover.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/autodiscover.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/autodiscover.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName caldav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://caldav.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/caldav.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/caldav.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/caldav.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/caldav.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName carddav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://carddav.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/carddav.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/carddav.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/carddav.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName files.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://files.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/files.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/files.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/files.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/files.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/files.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/files.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName freebusy.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://freebusy.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/freebusy.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/freebusy.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/freebusy.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/freebusy.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/freebusy.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/freebusy.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName webdav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://webdav.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webdav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webdav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webdav.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/webdav.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/webdav.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/webdav.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName webmail.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    Redirect permanent / https://webmail.<%= vhost_domain -%>
+    Redirect permanent /Microsoft-Server-ActiveSync https://activesync.<%= vhost_domain -%>/Microsoft-Server-ActiveSync
+
+    ErrorLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/webmail.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/webmail.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/webmail.<%= vhost_domain -%>.ca.cert
+
+</VirtualHost>

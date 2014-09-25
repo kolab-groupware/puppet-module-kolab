@@ -1,0 +1,29 @@
+; ----- Enable memcache extension module
+extension=memcache.so
+
+<%
+    use_memcache = false
+    memcache_hosts = scope.lookupvar("kolab::params::webadmin_memcache_hosts")
+
+    if memcache_hosts.kind_of?(Array) then
+        if !memcache_hosts.empty? then
+            use_memcache = true
+        end
+    else
+        memcache_hosts = scope.lookupvar("kolab::params::memcache_hosts")
+
+        if memcache_hosts.kind_of?(Array) then
+            if !memcache_hosts.empty? then
+                use_memcache = true
+            end
+        end
+    end
+-%>
+
+;  Use memcache as a session handler
+session.save_handler=memcache
+
+<% if classes.include?("kolab::webserver::webadmin") && use_memcache -%>
+;  Defines a comma separated of server urls to use for session storage
+session.save_path="<% memcache_hosts.each do |m| -%>tcp://<%= m -%>?persistent=0&weight=1&timeout=2&retry_interval=15,<% end -%>"
+<% end %>

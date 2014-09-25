@@ -1,0 +1,63 @@
+<%
+    # Web server section.
+    if scope.function_nodes_with_class_in_environment([@environment, 'kolab::webserver::roundcubemail']).include?(fqdn) then
+        dsnw = scope.lookupvar('kolab::params::roundcubemail_db_dsnw')
+        password = dsnw.split(':')[2].split('@')[0]
+        username = dsnw.split(':')[1].split('/')[2]
+-%>
+[check_mysql]
+user=<%= username %>
+password=<%= password %>
+
+<%
+        backends = scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::backend'])
+        if backends.length < 1 && (@environment == "development" || @environment == "testing") then
+            backends = scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::full'])
+        end
+        backends.each do |h|
+%>
+[check_smarthost_<%= h.split('.')[0] -%>]
+smtp-server=localhost
+smtp-port=25
+imap-starttls=true
+imap-username=monitoring.<%= h.split('.')[0] -%>@<%= scope.lookupvar("kolab::params::kolab_primary_domain") %>
+imap-password=Welcome2KolabSystems
+imap-server=<%= scope.lookupvar("kolab::params::imap_hostname") %>
+mail-to=monitoring.<%= h.split('.')[0] -%>@<%= scope.lookupvar("kolab::params::kolab_primary_domain") %>
+mail-from=monitoring.<%= h.split('.')[0] -%>@<%= scope.lookupvar("kolab::params::kolab_primary_domain") %>
+mail-header=X-Nagios-Host-Method: <%= fqdn -%> for smarthost
+
+[check_submission_<%= h.split('.')[0] -%>]
+smtp-port=587
+username=monitoring.<%= h.split('.')[0] -%>@<%= scope.lookupvar("kolab::params::kolab_primary_domain") %>
+password=Welcome2KolabSystems
+starttls=true
+imap-server=<%= scope.lookupvar("kolab::params::imap_hostname") %>
+mail-to=monitoring.<%= h.split('.')[0] -%>@<%= scope.lookupvar("kolab::params::kolab_primary_domain") %>
+mail-from=monitoring.<%= h.split('.')[0] -%>@<%= scope.lookupvar("kolab::params::kolab_primary_domain") %>
+mail-header=X-Nagios-Host-Method: <%= fqdn -%> for submission
+<%
+        end
+    end
+
+    auths = scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::backend'])
+    auths += scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::frontend'])
+    auths += scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::full'])
+    auths += scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::mupdate'])
+    auths += scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx'])
+
+    if auths.sort.uniq.include?(fqdn) then %>
+[check_auth_admin]
+user=cyrus-admin
+password=<%= scope.lookupvar('kolab::params::imap_admin_password') %>
+
+[check_auth_domain_user]
+user=domain-user-nagios
+password=hHT5HUoCYltS5O7
+
+[check_auth_alias_domain_user]
+user=domain-user-nagios
+password=hHT5HUoCYltS5O7
+<%
+    end
+%>

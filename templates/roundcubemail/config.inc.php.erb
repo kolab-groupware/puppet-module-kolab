@@ -1,0 +1,375 @@
+<?php
+    # Managed by Puppet
+<%
+    use_memcache = false
+    memcache_hosts = scope.lookupvar("kolab::params::webmail_memcache_hosts")
+
+    if memcache_hosts.kind_of?(Array) then
+        if !memcache_hosts.empty? then
+            use_memcache = true
+        end
+    end
+-%>
+    $config = array();
+
+    $config['db_dsnw'] = '<%= scope.lookupvar("kolab::params::roundcubemail_db_dsnw") -%>';
+<%
+    db_dsnw = scope.lookupvar("kolab::params::roundcubemail_db_dsnw")
+    db_dsnr = scope.lookupvar("kolab::params::roundcubemail_db_dsnr")
+    if @db_dsnr and db_dsnr != db_dsnw then
+-%>
+    $config['db_dsnr'] = '<%= scope.lookupvar("kolab::params::roundcubemail_db_dsnr") -%>';
+<%  end -%>
+
+<%
+    db_dsnw_noread = scope.lookupvar("kolab::params::roundcubemail_db_dsnw_noread")
+    if !@db_dsnw_noread then
+        db_dsnw_noread = false
+    else
+        db_dsnw_noread = true
+    end
+
+    if db_dsnw_noread then
+-%>
+    // Really redirect read-only queries to the read slaves (db_dsnr)
+    $config['db_dsnw_noread'] = true;
+<%  end -%>
+
+    $components = explode('.', $_SERVER["HTTP_HOST"]);
+    array_shift($components);
+    $domain = implode('.', $components);
+    $config['session_domain'] = $domain;
+    $config['username_domain'] = $domain;
+    $config['mail_domain'] = null;
+    $config['use_secure_urls'] = true;
+    $config['assets_path'] = '/assets/';
+
+    $config['des_key'] = '<%= scope.lookupvar("kolab::params::roundcubemail_des_key") -%>';
+
+    // IMAP Server Settings
+<%
+    imap_scheme = scope.lookupvar("kolab::params::imap_scheme")
+    imap_hostname = scope.lookupvar("kolab::params::imap_hostname")
+    imap_port = scope.lookupvar("kolab::params::imap_port")
+
+    # Set to the most secure if not already set.
+    if !@imap_scheme then
+        imap_scheme = "imaps"
+    end
+
+    # Use the scheme to determine the 'default_host' and 'default_port' setting.
+    if imap_scheme == "imaps" then
+        default_host_prefix = "ssl"
+    else
+        # TODO: Should be subject to imap_allow_insecure
+        default_host_prefix = "tls"
+    end
+
+    default_host = default_host_prefix + "://" + imap_hostname
+-%>
+    $config['default_host'] = '<%= default_host -%>';
+    $config['default_port'] = <%= imap_port -%>;
+    $config['imap_delimiter'] = '/';
+    $config['imap_force_lsub'] = true;
+
+    // Caching and storage settings
+<% if use_memcache then -%>
+    $config['imap_cache'] = 'memcache';
+<% else -%>
+    $config['imap_cache'] = 'db';
+<% end -%>
+    $config['imap_cache_ttl'] = '10d';
+    $config['messages_cache'] = 'db';
+    $config['messages_cache_ttl'] = '10d';
+<% if use_memcache then -%>
+    $config['session_storage'] = 'memcache';
+<% else -%>
+    $config['session_storage'] = 'db';
+<% end -%>
+
+<% if use_memcache then -%>
+    $config['memcache_hosts'] = array(
+<%     memcache_hosts.each do |h| -%>
+            '<%= h -%>',
+<%     end %>
+        );
+<% end -%>
+
+    // SMTP Server Settings
+<%
+    smtp_scheme = scope.lookupvar("kolab::params::smtp_scheme")
+    smtp_hostname = scope.lookupvar("kolab::params::smtp_hostname")
+    smtp_port = scope.lookupvar("kolab::params::smtp_port")
+
+    # Set to the most secure if not already set.
+    if !@smtp_scheme then
+        smtp_scheme = "smtp"
+    end
+
+    # Use the scheme to determine the 'default_host' and 'default_port' setting.
+    if smtp_scheme == "smtps" then
+        smtp_server_prefix = "ssl"
+    else
+        # TODO: Should be subject to smtp_allow_insecure
+        smtp_server_prefix = "tls"
+    end
+
+    smtp_server = smtp_server_prefix + "://" + smtp_hostname
+-%>
+    $config['smtp_server'] = '<%= smtp_server -%>';
+    $config['smtp_port'] = <%= smtp_port -%>;
+    $config['smtp_user'] = '%u';
+    $config['smtp_pass'] = '%p';
+    $config['smtp_helo_host'] = $_SERVER["HTTP_HOST"];
+
+    // LDAP Settings
+<% if use_memcache then -%>
+    $config['ldap_cache'] = 'memcache';
+<% else -%>
+    $config['ldap_cache'] = 'db';
+<% end -%>
+    $config['ldap_cache_ttl'] = '1h';
+
+    // Kolab specific defaults
+    $config['product_name'] = 'Kolab Groupware';
+    $config['skin_logo'] = 'skins/kolab/images/kolab_logo.png';
+    $config['quota_zero_as_unlimited'] = false;
+    $config['login_lc'] = 2;
+    $config['auto_create_user'] = true;
+    $config['enable_installer'] = false;
+    // The SMTP server does not allow empty identities
+    $config['mdn_use_from'] = true;
+
+    // Plugins
+    $config['plugins'] = array(
+            // Needs to be loaded before all others in order to allow
+            // certain roles to have plugins disabled.
+            'kolab_auth',
+            'acl',
+            'archive',
+            'calendar',
+            'jqueryui',
+            'kolab_addressbook',
+            'kolab_config',
+            'kolab_delegation',
+            'kolab_files',
+            'kolab_folders',
+            'kolab_notes',
+            'kolab_tags',
+            'libkolab',
+            'libcalendaring',
+            // 'logon_page',
+            'managesieve',
+            'markasjunk',
+            'newmail_notifier',
+            'odfviewer',
+            'password',
+            'redundant_attachments',
+            'tasklist',
+            'threading_as_default',
+            // contextmenu must be after kolab_addressbook (#444)
+            'contextmenu',
+        );
+
+
+    // Do not show deleted messages, mark deleted messages as read,
+    // and flag them as deleted instead of moving them to the Trash
+    // folder.
+    $config['skip_deleted'] = true;
+    $config['read_when_deleted'] = true;
+    $config['flag_for_deletion'] = true;
+    $config['delete_always'] = true;
+
+    $config['session_lifetime'] = 180;
+    $config['password_charset'] = 'UTF-8';
+    $config['useragent'] = 'Kolab 3.1/Roundcube ' . RCUBE_VERSION;
+    $config['dont_override'] = Array('skin');
+
+    $config['message_sort_col'] = 'date';
+
+    $config['spellcheck_engine'] = 'pspell';
+    $config['spellcheck_dictionary'] = true;
+    $config['spellcheck_ignore_caps'] = true;
+    $config['spellcheck_ignore_nums'] = true;
+    $config['spellcheck_ignore_syms'] = true;
+    $config['spellcheck_languages'] = array(
+            'da' => 'Dansk',
+            'de' => 'Deutsch',
+            'en' => 'English',
+            'es' => 'Español',
+            'fr' => 'Français',
+            'it' => 'Italiano',
+            'nl' => 'Nederlands',
+            'pl' => 'Polski',
+            'pt' => 'Português',
+            'ru' => 'Русский',
+            'fi' => 'Suomi',
+            'sv' => 'Svenska'
+        );
+
+    $config['undo_timeout'] = 10;
+    $config['upload_progress'] = 2;
+    $config['address_template'] = '{street}<br/>{locality} {zipcode}<br/>{country} {region}';
+    $config['preview_pane'] = true;
+    $config['preview_pane_mark_read'] = 0;
+
+    $config['autoexpand_threads'] = 2;
+
+    // Bottom posting for reply mode
+    $config['reply_mode'] = 0;
+    $config['sig_above'] = false;
+    $config['mdn_requests'] = 0;
+    $config['mdn_default'] = false;
+    $config['dsn_default'] = false;
+    $config['reply_same_folder'] = false;
+
+    if (file_exists(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
+        include_once(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
+    }
+
+    // Re-apply mandatory settings here.
+
+    $config['log_driver'] = 'file';
+    $config['log_date_format'] = 'Y-M-d H:i:s O';
+    $config['syslog_id'] = 'roundcube';
+    $config['syslog_facility'] = LOG_USER;
+    $config['smtp_log'] = true;
+    $config['log_logins'] = true;
+    $config['log_session'] = true;
+<% if environment == "production" then %>
+    $config['debug_level'] = 0;
+    $config['devel_mode'] = false;
+    $config['sql_debug'] = false;
+    $config['memcache_debug'] = false;
+    $config['imap_debug'] = false;
+    $config['ldap_debug'] = false;
+    $config['smtp_debug'] = false;
+    $config['activesync_debug'] = false;
+    $config['activesync_user_log'] = false;
+<% else %>
+    $config['debug_level'] = 1;
+    $config['devel_mode'] = true;
+    $config['sql_debug'] = true;
+    $config['memcache_debug'] = true;
+    $config['imap_debug'] = true;
+    $config['ldap_debug'] = true;
+    $config['smtp_debug'] = true;
+    $config['activesync_debug'] = true;
+    $config['activesync_user_log'] = true;
+<% end %>
+
+    $config['performance_stats'] = true;
+
+    $config['drafts_mbox'] = 'Entwürfe';
+    $config['junk_mbox'] = 'Spam';
+    $config['sent_mbox'] = 'Gesendet';
+    $config['trash_mbox'] = 'Gelöscht';
+
+    $config['skin'] = 'larry';
+    $config['support_url'] = 'https://<%= domain -%>/support';
+    $config['skin_include_php'] = false;
+    $config['mime_magic'] = null;
+    $config['im_identify_path'] = '/usr/bin/identify';
+    $config['im_convert_path'] = '/usr/bin/convert';
+    $config['log_dir'] = 'logs/';
+    $config['temp_dir'] = '/var/lib/roundcubemail/';
+
+    $config['archive_mbox'] = 'Archiv';
+    $config['junk_mbox'] = 'Spam';
+    $config['default_folders'] = array('INBOX', 'Entwürfe', 'Gesendet', 'Spam', 'Gelöscht', 'Archiv');
+
+    $config['ssl_verify_host'] = false;
+    $config['ssl_verify_peer'] = false;
+
+    $config['kolab_http_request'] = array(
+            'ssl_verify_host' => false,
+            'ssl_verify_peer' => false,
+//            'ssl_cafile' => '/etc/pki/tls/certs/mykolab.com.ca.cert',
+//            'ssl_local_cert' => '/etc/pki/tls/private/mykolab.com.cert',
+//            Are we missing ssl_local_key??
+        );
+
+    $config['address_book_type'] = 'ldap';
+    $config['autocomplete_min_length'] = 3;
+    $config['autocomplete_threads'] = 0;
+    $config['autocomplete_max'] = 15;
+
+    $config['ldap_public'] = Array(
+            'Kolab' => Array(
+                    'name'                          => 'Globales Adressbuch',
+                    'hosts'                         => array('<%= scope.lookupvar("kolab::params::ldap_hostname") -%>'),
+                    'port'                          => 389,
+                    'use_tls'                       => false,
+                    'base_dn'                       => '%dc',
+                    'user_specific'                 => true,
+                    'bind_dn'                       => '%dn',
+                    'bind_pass'                     => '',
+                    'search_base_dn'                => '%dc',
+                    'search_bind_dn'                => "<%= scope.lookupvar('kolab::params::ldap_service_bind_dn') -%>",
+                    'search_bind_pass'              => "<%= scope.lookupvar('kolab::params::ldap_service_bind_pw') -%>",
+                    'search_filter'                 => '(&(objectClass=kolabinetOrgPerson)(|(mail=%fu)(alias=%fu)))',
+                    'writable'                      => false,
+                    'LDAP_Object_Classes'           => array("top", "inetOrgPerson"),
+                    'required_fields'               => array("cn", "sn", "mail"),
+                    'LDAP_rdn'                      => 'uid',
+                    'ldap_version'                  => 3,       // using LDAPv3
+                    'search_fields'                 => array('mail', 'alias', 'mailalternateaddress', 'cn', 'displayname'),
+                    'sort'                          => array('displayname', 'sn', 'givenname', 'cn'),
+                    'scope'                         => 'sub',
+                    'filter'                        => '(&(objectclass=inetorgperson)(!(objectclass=nstombstone)))',
+                    'vlv'                           => true,
+                    'vlv_search'                    => false,
+                    'config_root_dn'                => 'cn=config',
+                    'fuzzy_search'                  => true,
+                    'sizelimit'                     => '0',
+                    'timelimit'                     => '0',
+                    'fieldmap'                      => Array(
+                            // Roundcube            => LDAP
+                            'name'                  => 'displayname',
+                            'surname'               => 'sn',
+                            'firstname'             => 'givenName',
+                            'email:main'            => 'mail',
+                            'email:external'        => 'mailAlternateAddress',
+                            'email:alias'           => 'alias',
+                            'phone:sip'             => 'astaccountregistrationexten',
+                            'phone:main'            => 'telephoneNumber',
+                            'phone:mobile'          => 'mobile',
+                            'jobtitle'              => 'title',
+                            'organization'          => 'o',
+                            'manager'               => 'manager',
+                            'assistant'             => 'secretary',
+                            'photo'                 => 'jpegphoto',
+                            'street'                => 'street',
+                            'locality'              => 'l',
+                            'zipcode'               => 'postalcode',
+                        ),
+/*
+                    'groups'                    => Array(
+                            'base_dn'           => '%dc',
+                            'filter'            => '(&(entrydn=*,ou=Groups,*)(|(objectclass=groupofuniquenames)(objectclass=groupofurls))(!(objectclass=nstombstone)))',
+                        ),
+*/
+                    'group_filters'                 => Array(
+                            'groups'                => Array(
+                                    'name'          => 'Gruppen',
+                                    'base_dn'       => 'dc=lhm,dc=klab,dc=cc',
+                                    'scope'         => 'sub',
+                                    'filter'        => '(&(entrydn=*,ou=Groups,*)(|(objectclass=groupofuniquenames)(objectclass=groupofurls))(!(objectclass=nstombstone)))',
+                                    'email_attr'    => 'mail',
+                                    'name_attr'     => 'cn',
+                                ),
+
+                        ),
+                    'domain_base_dn'                => '<%= scope.lookupvar("kolab::params::ldap_domain_base_dn") -%>',
+                    'domain_filter'                 => '(&(objectclass=domainrelatedobject)(associateddomain=%s))',
+                    'domain_name_attr'              => 'associateddomain',
+                ),
+        );
+
+    $config['autocomplete_addressbooks'] = Array('Kolab');
+    $config['autocomplete_single'] = true;
+
+    $config['contact_search_name'] = '{name}/{organization} <{email}>';
+
+    $config['htmleditor'] = 1;
+?>

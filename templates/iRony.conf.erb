@@ -1,0 +1,17 @@
+<?php
+
+    $config = array();
+    $config['base_uri'] = null;
+    $config['useragent'] = 'iRony/' . RCUBE_VERSION;
+    $config['kolabdav_plugins'] = array('kolab_auth');
+    $config['kolabdav_auth_cache'] = 'memcache';
+    $config['kolabdav_auth_cache_ttl'] = '1h';
+<% if environment == "development" then -%>
+    $config['kolabdav_console'] = true;
+<% else -%>
+    $config['kolabdav_console'] = false;
+<% end %>
+    $config['kolabdav_user_debug'] = true;
+    $config['log_dir'] = '/var/log/iRony';
+
+

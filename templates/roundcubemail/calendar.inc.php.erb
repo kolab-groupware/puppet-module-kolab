@@ -1,0 +1,75 @@
+<?php
+    $config['calendar_driver'] = "kolab";
+    $config['calendar_default_view'] = "agendaWeek";
+    $config['calendar_timeslots'] = 2;
+    $config['calendar_first_day'] = 1;
+    $config['calendar_first_hour'] = 6;
+    $config['calendar_work_start'] = 6;
+    $config['calendar_work_end'] = 18;
+    $config['calendar_event_coloring'] = 0;
+
+    $config['calendar_caldav_url'] = "https://caldav.<%= domain -%>/calendars/%u/%i";
+
+    $config['kolab_invitation_calendars'] = true;
+
+    $config['calendar_resources_driver'] = 'ldap';
+
+    $config['calendar_resources_directory'] = array(
+            'name'                  => 'Global Address Book',
+            'hosts'                 => array('<%= scope.lookupvar("kolab::params::ldap_hostname") -%>'),
+            'port'                  => 389,
+            'use_tls'               => false,
+            'base_dn'               => '%dc',
+            'user_specific'         => true,
+            'bind_dn'               => '%dn',
+            'bind_pass'             => '',
+            'search_base_dn'        => '%dc',
+            'search_bind_dn'        => "<%= scope.lookupvar('kolab::params::ldap_service_bind_dn') -%>",
+            'search_bind_pass'      => "<%= scope.lookupvar('kolab::params::ldap_service_bind_pw') -%>",
+            'search_filter'         => '(&(objectClass=kolabinetOrgPerson)(|(mail=%fu)(alias=%fu)))',
+            'writable'              => false,
+            'LDAP_Object_Classes'   => array("top", "inetOrgPerson"),
+            'required_fields'       => array("cn", "sn", "mail"),
+            'LDAP_rdn'              => 'uid',
+            'ldap_version'          => 3,       // using LDAPv3
+            'search_fields'         => array('cn', 'mail'),
+            'sort'                  => array('cn'),
+            'scope'                 => 'sub',
+            'filter'                => '(&(entrydn=*,ou=Resources,*)(|(&(objectclass=kolabsharedfolder)(kolabfoldertype=event)(mail=*))(objectclass=groupofuniquenames)(objectclass=groupofurls))(!(objectclass=nstombstone)))',
+            // Disable VLV or it results in an operations error
+            'vlv'                   => false,
+            'vlv_search'            => false,
+            'config_root_dn'        => 'cn=config',
+            'fuzzy_search'          => true,
+            'sizelimit'             => '0',
+            'timelimit'             => '0',
+            'fieldmap'              => Array(
+                    'name'          => 'cn',
+                    'email'         => 'mail',
+                    'owner'         => 'owner',
+                    'description'   => 'description',
+                    'attributes'    => 'kolabdescattribute',
+                    'members'       => 'uniquemember',
+                    'phone'         => 'telephonenumber',
+                    'mobile'        => 'mobile'
+                ),
+
+            'class_type_map'        => Array(
+                    'kolabsharedfolder' => 'resource',
+                    'groupofuniquenames' => 'collection'
+                ),
+
+            'groups'                => Array(
+                    'name_attr'     => 'cn'
+                ),
+
+            'domain_base_dn'            => '<%= scope.lookupvar("kolab::params::ldap_domain_base_dn") -%>',
+            'domain_filter'             => '(&(objectclass=domainrelatedobject)(associateddomain=%s))',
+            'domain_name_attr'          => 'associateddomain',
+        );
+
+    if (file_exists(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
+        include_once(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
+    }
+
+?>

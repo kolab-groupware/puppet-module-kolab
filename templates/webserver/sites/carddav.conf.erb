@@ -1,0 +1,82 @@
+# Managed by Puppet
+# from modules/kolab/templates/webserver/sites/webmail.conf.erb
+#
+<%
+    vhost_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
+
+    if !@vhost_domain then
+        vhost_domain = @domain
+    end
+-%>
+<VirtualHost *:80>
+    ServerName carddav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    DocumentRoot /usr/share/iRony/public_html/
+
+    ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/carddav.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/carddav.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+
+    RewriteEngine On
+    RewriteRule ^/(.*)$ https://carddav.<%= vhost_domain -%>/$1 [R,L]
+
+    <Directory "/usr/share/iRony/public_html/">
+        AllowOverride All
+        <ifModule mod_authz_core.c>
+            Require all granted
+        </ifModule>
+        <ifModule !mod_authz_core.c>
+            Order Allow,Deny
+            Allow from All
+        </ifModule>
+    </Directory>
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName carddav.<%= vhost_domain %>
+    ServerAdmin support@kolabsys.com
+
+    DocumentRoot /usr/share/iRony/public_html/
+
+    ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/carddav.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/carddav.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/carddav.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/carddav.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+
+    <ifModule mod_headers.c>
+        Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
+    </ifModule>
+
+    SSLEngine On
+    SSLProtocol all -SSLv2 -SSLv3
+    SSLHonorCipherOrder on
+    SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 \
+        EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+aRSA+RC4 \
+        EECDH EDH+aRSA RC4 !aNULL !eNULL !LOW !3DES !MD5 !EXP !PSK !SRP !DSS"
+
+    SSLCertificateFile /etc/pki/tls/certs/carddav.<%= vhost_domain -%>.cert
+    SSLCertificateKeyFile /etc/pki/tls/private/carddav.<%= vhost_domain -%>.key
+    SSLCACertificateFile /etc/pki/tls/certs/carddav.<%= vhost_domain -%>.ca.cert
+
+    <Directory "/usr/share/iRony/public_html/">
+        AllowOverride All
+        <ifModule mod_authz_core.c>
+            Require all granted
+        </ifModule>
+        <ifModule !mod_authz_core.c>
+            Order Allow,Deny
+            Allow from All
+        </ifModule>
+
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^\.well-known/caldav   / [R,L]
+        RewriteRule ^\.well-known/carddav  / [R,L]
+
+        RewriteCond  %{REQUEST_FILENAME}  !-f
+        RewriteCond  %{REQUEST_FILENAME}  !-d
+        RewriteRule  (.*)                 index.php  [qsappend,last]
+
+    </Directory>
+
+</VirtualHost>

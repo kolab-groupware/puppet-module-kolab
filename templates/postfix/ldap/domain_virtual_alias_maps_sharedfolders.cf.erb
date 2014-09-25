@@ -1,0 +1,15 @@
+# Managed by puppet
+
+server_host = <%= scope.lookupvar('kolab::params::ldap_hostname') %>
+server_port = <%= scope.lookupvar('kolab::params::ldap_port') %>
+version = 3
+search_base = <%= 'dc=' + name.split('.').join(',dc=') %>
+scope = sub
+
+domain = ldap:/etc/postfix/ldap/<%= name -%>/mydestination.cf
+
+bind_dn = <%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>
+bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
+
+query_filter = (&(|(mail=%s)(alias=%s))(objectclass=kolabsharedfolder))
+result_attribute = mail

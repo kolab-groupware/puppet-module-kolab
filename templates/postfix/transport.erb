@@ -1,0 +1,18 @@
+# Managed by Puppet
+<%
+    socket_path = scope.lookupvar("kolab::params::imap_socket_path")
+
+    if !@socket_path then
+        socket_path = "/var/lib/imap/socket"
+    end
+
+    hosteddomains = scope.function_titles_for_restype_in_environment([environment, 'kolab::hosteddomain']).sort.uniq
+
+    backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).sort.uniq
+-%>
+<% if backends.include?(fqdn) then -%>
+<% hosteddomains.each do |hosteddomain| -%>
+shared@<%= hosteddomain -%>     lmtp:unix:<%= socket_path -%>/lmtp
+<% end -%>
+<% end %>
+

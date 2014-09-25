@@ -1,0 +1,138 @@
+<?php
+
+    // The id of the LDAP address book (which refers to the rcmail_config['ldap_public'])
+    // or complete addressbook definition array.
+    $config['kolab_auth_addressbook'] = Array(
+        'name'                      => 'Kolab Auth',
+        'hosts'                     => Array('<%= scope.lookupvar("kolab::params::ldap_hostname") -%>'),
+        'port'                      => <%= scope.lookupvar('kolab::params::ldap_port') -%>,
+        'use_tls'                   => false,
+        'user_specific'             => false,
+        'base_dn'                   => '%dc',
+        'bind_dn'                   => "<%= scope.lookupvar('kolab::params::ldap_service_bind_dn') -%>",
+        'bind_pass'                 => "<%= scope.lookupvar('kolab::params::ldap_service_bind_pw') -%>",
+        'writable'                  => false,
+        'ldap_version'              => 3,       // using LDAPv3
+        'fieldmap'                  => Array(
+                'name'              => 'displayname',
+                'cn'                => 'cn',
+                'email'             => 'mail',
+                'email:alias'       => 'alias',
+                'role'              => 'nsroledn',
+            ),
+        'sort'                      => 'displayname',
+        'scope'                     => 'sub',
+        'filter'                    => '(objectClass=kolabinetorgperson)',
+        'fuzzy_search'              => true,
+        'sizelimit'                 => '0',
+        'timelimit'                 => '0',
+        'groups'                    => Array(
+                'base_dn'           => 'ou=Groups,%dc',
+                'filter'            => '(|(objectclass=groupofuniquenames)(objectclass=groupofurls))',
+                'object_classes'    => Array('top', 'groupOfUniqueNames'),
+                'member_attr'       => 'uniqueMember',
+            ),
+        'domain_base_dn'            => '<%= scope.lookupvar("kolab::params::ldap_domain_base_dn") -%>',
+        'domain_filter'             => '(&(objectclass=domainrelatedobject)(associateddomain=%s))',
+        'domain_name_attr'          => 'associateddomain',
+    );
+
+
+    // This will overwrite defined filter
+    $config['kolab_auth_filter'] = '(&(objectclass=kolabinetorgperson)(|(uid=%u)(mail=%fu)))';
+
+    // Use this fields (from fieldmap configuration) to get authentication ID
+    $config['kolab_auth_login'] = 'email';
+
+    // Use these fields (from fieldmap configuration) for the default identity
+    $config['kolab_auth_name']  = array('name', 'cn');
+    $config['kolab_auth_alias'] = 'alias';
+    $config['kolab_auth_email'] = array('email', 'email:alias');
+
+    if (preg_match('/\/helpdesk-login\//', $_SERVER["REQUEST_URI"]) ) {
+
+        // Login and password of the admin user. Enables "Login As" feature.
+        $config['kolab_auth_admin_login']    = '<%= scope.lookupvar("kolab::params::imap_admin_login") -%>';
+        $config['kolab_auth_admin_password'] = '<%= scope.lookupvar("kolab::params::imap_admin_password") -%>';
+
+        $config['kolab_auth_auditlog'] = true;
+    }
+
+    // Administrative role field (from fieldmap configuration) which must be filled with
+    // specified value which adds privilege to login as another user.
+    $config['kolab_auth_role']       = 'role';
+    $config['kolab_auth_role_value'] = 'cn=kolab-admin,<%= scope.lookupvar("kolab::params::ldap_root_dn") -%>';
+
+    $config['kolab_auth_role_plugins'] = Array(
+            'cn=activesync-user,%dc' => Array('kolab_activesync'),
+        );
+
+    // Administrative group name to which user must be assigned to
+    // which adds privilege to login as another user.
+    $config['kolab_auth_group'] = 'Kolab Helpdesk';
+
+    // Skin according to domain
+    $config['kolab_auth_role_settings'] = Array(
+            'cn=imap-user,%dc' => array(
+                    'calendar_disabled' => array(
+                            'value' => true,
+                            'allow_override' => false
+                        ),
+                    'kolab_files_disabled' => array(
+                            'value' => true,
+                            'allow_override' => false
+                        ),
+                    'tasklist_disabled' => array(
+                            'value' => true,
+                            'allow_override' => false
+                        ),
+                ),
+            // kanarip.com
+            'cn=kolab-user,dc=kanarip,dc=com' => Array(
+                    'skin_logo' => Array(
+                            'value' => 'skins/kanarip.com/images/logo.png',
+                            'allow_override' => false,
+                        ),
+                    'skin' => Array(
+                            'value' => 'kanarip.com',
+                            'allow_override' => false,
+                        ),
+                ),
+            'cn=imap-user,dc=kanarip,dc=com' => Array(
+                    'skin_logo' => Array(
+                            'value' => 'skins/kanarip.com/images/logo.png',
+                            'allow_override' => false,
+                        ),
+                    'skin' => Array(
+                            'value' => 'kanarip.com',
+                            'allow_override' => false,
+                        ),
+                ),
+            // tdsw.ch
+            'cn=kolab-user,dc=tdsw,dc=ch' => Array(
+                    'skin_logo' => Array(
+                            'value' => 'skins/tdsw.ch/images/logo.png',
+                            'allow_override' => false,
+                        ),
+                    'skin' => Array(
+                            'value' => 'tdsw.ch',
+                            'allow_override' => false,
+                        ),
+                ),
+            'cn=imap-user,dc=tdsw,dc=ch' => Array(
+                    'skin_logo' => Array(
+                            'value' => 'skins/tdsw.ch/images/logo.png',
+                            'allow_override' => false,
+                        ),
+                    'skin' => Array(
+                            'value' => 'tdsw.ch',
+                            'allow_override' => false,
+                        ),
+                ),
+    );
+
+    if (file_exists(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
+        include_once(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
+    }
+
+?>

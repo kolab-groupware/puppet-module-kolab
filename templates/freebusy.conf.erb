@@ -1,0 +1,50 @@
+;; Managed by Puppet
+
+;; Logging configuration
+[log]
+driver = file  ; supported drivers: file, syslog
+path = ./logs
+name = freebusy
+<% if environment == "development" then %>
+loglevel = 100  ; Debug
+<% else %>
+loglevel = 300
+<% end %>
+
+;; local Kolab directory server
+[directory "kolab-ldap"]
+type = ldap
+host = "<%= scope.lookupvar('kolab::params::ldap_uri') %>"
+bind_dn = "<%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>"
+bind_pw = "<%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>"
+base_dn = "<%= scope.lookupvar('kolab::params::ldap_root_dn') %>"
+filter = "(&(objectClass=kolabInetOrgPerson)(|(uid=%s)(mail=%s)(alias=%s)))"
+attributes[] = mail
+lc_attributes[] = mail
+fbsource = <%= scope.lookupvar("kolab::params::imap_scheme") -%>://%s:<%= scope.lookupvar("kolab::params::imap_admin_password") -%>@<%= scope.lookupvar("kolab::params::imap_hostname") -%>:<%= scope.lookupvar("kolab::params::imap_port") -%>/?proxy_auth=<%= scope.lookupvar("kolab::params::imap_admin_login") -%>
+cacheto = /var/cache/kolab-freebusy/%s.ifb
+expires = 10m
+<% if environment == "development" then %>
+loglevel = 100  ; Debug
+<% else %>
+loglevel = 300
+<% end %>
+
+;; resolve Kolab resources from LDAP and fetch calendar from IMAP
+[directory "kolab-resources"]
+type = ldap
+host = "<%= scope.lookupvar('kolab::params::ldap_uri') %>"
+bind_dn = "<%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>"
+bind_pw = "<%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>"
+base_dn = "<%= scope.lookupvar('kolab::params::ldap_root_dn') %>"
+filter = "(&(objectClass=kolabsharedfolder)(kolabfoldertype=event)(mail=%s))"
+attributes = mail, kolabtargetfolder
+fbsource = "<%= scope.lookupvar("kolab::params::imap_scheme") -%>://<%= scope.lookupvar("kolab::params::imap_admin_login") -%>:<%= scope.lookupvar("kolab::params::imap_admin_password") -%>@<%= scope.lookupvar("kolab::params::imap_hostname") -%>:<%= scope.lookupvar("kolab::params::imap_port") -%>/%kolabtargetfolder?acl=lrs"
+cacheto = /var/cache/kolab-freebusy/%s.ifb
+expires = 10m
+<% if environment == "development" then %>
+loglevel = 100  ; Debug
+<% else %>
+loglevel = 300
+<% end %>
+

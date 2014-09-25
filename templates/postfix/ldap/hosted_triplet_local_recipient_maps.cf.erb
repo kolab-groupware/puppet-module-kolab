@@ -1,0 +1,17 @@
+# Managed by puppet
+
+server_host = <%= scope.lookupvar('kolab::params::ldap_hostname') %>
+server_port = <%= scope.lookupvar('kolab::params::ldap_port') %>
+version = 3
+search_base = dc=%3,dc=%2,dc=%1
+scope = sub
+
+domain = ldap:/etc/postfix/ldap/hosted_triplet_mydestination.cf
+
+bind_dn = <%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>
+bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
+
+<% role = scope.lookupvar('kolab::params::Imap::Backend::role') -%>
+
+query_filter = (&(|(mail=%s)(alias=%s))(|(objectclass=kolabinetorgperson)(|(objectclass=kolabgroupofuniquenames)(objectclass=kolabgroupofurls))(|(|(objectclass=groupofuniquenames)(objectclass=groupofurls))(objectclass=kolabsharedfolder))(objectclass=kolabsharedfolder))<% if role == "backend" then -%>(mailhost=<%= fqdn -%>)<% end -%>)
+result_attribute = mail

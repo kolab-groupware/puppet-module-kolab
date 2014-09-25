@@ -1,0 +1,35 @@
+# Managed by puppet
+
+server_host = <%= scope.lookupvar('kolab::params::ldap_hostname') %>
+server_port = <%= scope.lookupvar('kolab::params::ldap_port') %>
+version = 3
+search_base = dc=%3,dc=%2,dc=%1
+scope = sub
+
+domain = ldap:/etc/postfix/ldap/hosted_triplet_mydestination.cf
+
+bind_dn = <%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>
+bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
+
+<%
+    socket_path = scope.lookupvar('socket_path')
+
+    if !@socket_path then
+        socket_path = "/var/lib/imap/socket"
+    end
+
+    role = scope.lookupvar('kolab::params::Imap::Backend::role')
+    if !@role then
+        if scope.function_nodes_with_class(['kolab::params::Imap::Full']).include?(fqdn)
+            role = "full"
+        end
+    end
+-%>
+query_filter = (&(mail=%s)(|(objectclass=kolabinetorgperson)(objectclass=kolabsharedfolder))<% if role == "backend" then -%>(mailhost=<%= fqdn -%>)<% end -%>)
+<% if role == "backend" || role == "full" then -%>
+result_attribute = mail
+result_format = lmtp:unix:<%= socket_path -%>/lmtp
+<% else %>
+result_attribute = mailHost
+result_format = smtp:[%s]:25
+<% end %>

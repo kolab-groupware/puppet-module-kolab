@@ -1,0 +1,421 @@
+# Managed with puppet
+
+#
+# This file defines the services to check in a few categories:
+#
+# - Generic Services
+# - http/https services
+# - Mail Services
+# - Disk checking (free space)
+#
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             Alive
+    check_command                   check-host-alive
+}
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             Munin Process
+    check_command                   check_nrpe_running_proc!munin-node
+}
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             NRPE Process
+    check_command                   check_nrpe_running_proc!nrpe
+}
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             Puppet Memory
+    check_command                   check_nrpe_puppet_mem
+}
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             Puppet Process
+    check_command                   check_nrpe_running_proc!puppetd
+}
+
+define service {
+    use                             insignificant-service
+    host_name                       *
+    service_description             SSH Service
+    check_command                   check_ssh
+}
+
+define service {
+    use                             insignificant-service
+    host_name                       *
+    service_description             NTP
+    check_command                   check_nrpe_ntp
+}
+
+define service {
+    use                             insignificant-service
+    host_name                       *
+    service_description             Load Average
+    check_command                   check_nrpe_load
+}
+
+define service {
+    use                             insignificant-service
+    host_name                       *
+    service_description             Disk
+    check_command                   check_nrpe_disk!20%!10%
+}
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             Zombie Processes
+    check_command                   check_nrpe_zombie_procs
+}
+
+define service {
+    use                             general-service
+    host_name                       *
+    service_description             Total Processes
+    check_command                   check_nrpe_total_procs
+}
+
+define service {
+    use                             passive-service
+    host_name                       *
+    service_description             Pending packages
+    obsess_over_service             0
+    notification_options            n
+    check_command                   check_dummy
+}
+
+##
+## Mail Services
+##
+<%
+    pclass = 'lhm_klab_cc-kolab::Mx'
+
+    ['development','testing','production'].each do |environ|
+
+        servers = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+
+        if servers.length > 0 then
+
+            [
+                    'check_nrpe_clamd',
+                    'check_nrpe_submission!localhost',
+                    'check_nrpe_mailq!250!500',
+                    'check_nrpe_smtp!localhost',
+                    'check_nrpe_auth/admin',
+                    'check_nrpe_auth/domain-user',
+                    'check_nrpe_auth/alias-domain-user'
+                ].each do |service| %>
+define service {
+    use                             general-service
+    hostgroup_name                  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    service_description             <%= service.gsub(/!.*/,'').split('_')[-1] %>
+    check_command                   <%= service %>
+}
+<%
+            end
+        end
+    end
+-%>
+
+##
+## Memcached Services
+##
+<%
+    pclass = 'lhm_klab_cc-memcached'
+
+    ['development','testing','production'].each do |environ|
+
+        servers = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+
+        if servers.length > 0 then
+
+            [
+                    'check_nrpe_memcached!localhost',
+                    'check_nrpe_memcached!repl-peer'
+                ].each do |service| %>
+define service {
+    use                             general-service
+    hostgroup_name                  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    service_description             <%= service.gsub(/!.*/,'').split('_')[-1] -%>/<%= service.gsub(/.*!/,'') %>
+    check_command                   <%= service %>
+}
+<%
+            end
+        end
+    end
+%>
+##
+## IMAP Mupdate Servers
+## 
+<%
+    pclass = 'lhm_klab_cc-kolab::Imap::Mupdate'
+
+    ['development','testing','production'].each do |environ|
+
+        servers = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+        if servers.length > 0 then
+%>
+# IMAP Mupdate Servers in <%= environ -%>: <%= servers.join(', ') -%>
+<%
+
+            [
+                    'check_nrpe_proc!kolabd',
+                    'check_nrpe_proc!mupdate'
+                ].each do |service| %>
+define service {
+    use                             general-service
+    hostgroup_name                  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    service_description             <%= service.gsub(/!.*/,'').split('_')[-1] -%>/<%= service.gsub(/.*!/,'') %>
+    check_command                   <%= service %>!1:!1:!PROCS
+}
+<%
+            end
+        end
+    end
+%>
+##
+## Web Services
+##
+<%
+    pclass = 'lhm_klab_cc-kolab::Webserver::Webclient'
+
+    ['development','testing','production'].each do |environ|
+
+        servers = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+
+        if servers.length > 0 then
+
+            [
+                    'check_nrpe_http',
+                    'check_nrpe_https'
+                ].each do |service| %>
+define service {
+    use                             general-service
+    hostgroup_name                  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    service_description             <%= service.gsub(/!.*/,'').split('_')[-1] %>
+    check_command                   <%= service -%>!localhost
+}
+<%
+            end
+%>
+# Web Servers in <%= environ -%>: <%= servers.join(', ') %>
+<%
+            mysql_servers = scope.function_nodes_with_class_in_environment([environ, 'Mysql::Server']).sort.uniq
+%>
+# MySQL Servers in <%= environ -%>: <%= mysql_servers.join(', ') %>
+<%
+            servers.each do |server|
+                mysql_servers.each do |mysql_server|
+
+                    if server.split('.').last(2).join('.').casecmp(mysql_server.split('.').last(2).join('.')) == 0 then %>
+define service {
+    use                             general-service
+    host_name                       <%= server %>
+    service_description             <%= mysql_server.split('.')[0] %>
+    check_command                   check_nrpe_mysql!<%= mysql_server.split('.')[0] %>
+}
+<%
+                    end
+                end
+            end
+%>
+# Web Servers in <%= environ -%>: <%= servers.join(', ') %>
+<%
+            mx_servers = scope.function_nodes_with_class_in_environment([environ, 'lhm_klab_cc-kolab::Mx']).sort.uniq
+%>
+# MX Servers in <%= environ -%>: <%= mx_servers.join(', ') %>
+<%
+            servers.each do |server|
+                mx_servers.each do |mx_server|
+
+                    if server.split('.').last(2).join('.').casecmp(mx_server.split('.').last(2).join('.')) == 0 then %>
+define service {
+    use                             general-service
+    host_name                       <%= server %>
+    service_description             <%= mx_server.split('.')[0] %>
+    check_command                   check_nrpe_submission!<%= mx_server.split('.')[0] %>
+}
+<%
+                    end
+                end
+            end
+
+%>
+# Web Servers in <%= environ -%>: <%= servers.join(', ') %>
+<%
+            mc_servers = scope.function_nodes_with_class_in_environment([environ, 'lhm_klab_cc-memcached']).sort.uniq
+            wap_servers = scope.function_nodes_with_class_in_environment([environ, 'lhm_klab_cc-kolab::Webserver::Wap']).sort.uniq
+%>
+# Memcached Servers in <%= environ -%>: <%= mc_servers.join(', ') %>
+<%
+            servers.each do |server|
+                mc_servers.each do |mc_server|
+                    next if wap_servers.include?(mc_server)
+
+                    if server.split('.').last(2).join('.').casecmp(mc_server.split('.').last(2).join('.')) == 0 then %>
+define service {
+    use                             general-service
+    host_name                       <%= server %>
+    service_description             memcached/<%= mc_server.split('.')[0] %>
+    check_command                   check_nrpe_memcached!<%= mc_server.split('.')[0] %>
+}
+<%
+                    end
+                end
+            end
+%>
+# Web Servers in <%= environ -%>: <%= servers.join(', ') %>
+<%
+            backend_servers = scope.function_nodes_with_class_in_environment([environ, 'lhm_klab_cc-kolab::Imap::Backend']).sort.uniq
+            if backend_servers.length < 1 && environment == "development" then
+                backend_servers = scope.function_nodes_with_class_in_environment([environ, 'lhm_klab_cc-kolab::Imap::Full']).sort.uniq
+            end
+%>
+# Backend Servers in <%= environ -%>: <%= backend_servers.join(', ') %>
+<%
+            servers.each do |server|
+                backend_servers.each do |backend_server|
+
+                    if server.split('.').last(2).join('.').casecmp(backend_server.split('.').last(2).join('.')) == 0 then %>
+define service {
+    use                             mail-delivery-check-service
+    host_name                       <%= server %>
+    service_description             smarthost/<%= backend_server.split('.')[0] %>
+    check_command                   check_nrpe_smarthost_delivery!check_smarthost_<%= backend_server.split('.')[0] %>
+}
+<%
+                        mx_servers = scope.function_nodes_with_class_in_environment([environ, 'lhm_klab_cc-kolab::Mx']).sort.uniq
+%>
+# MX Servers in <%= environ -%>: <%= mx_servers.join(', ') %>
+<%
+                        mx_servers.each do |mx_server|
+                            if server.split('.').last(2).join('.').casecmp(mx_server.split('.').last(2).join('.')) == 0 then %>
+define service {
+    use                             mail-delivery-check-service
+    host_name                       <%= server %>
+    service_description             submission/<%= mx_server.split('.')[0] -%>/<%= backend_server.split('.')[0] %>
+    check_command                   check_nrpe_submission_delivery!check_submission_<%= backend_server.split('.')[0] -%>!<%= mx_server %>
+}
+<%
+                            end
+                        end
+                    end
+                end
+            end
+
+        end
+
+        require 'resolv'
+
+        Range.new(1, servers.length).each do |server|
+            d = Resolv::DNS.new(
+                    :nameserver => ['10.8.3.1','10.8.3.2'],
+                    :search => ['lhm.klab.cc'],
+                    :ndots => 1
+                )
+
+            begin
+                a = d.getaddress('web-lb' + server.to_s + '.lhm.klab.cc') %>
+define service {
+    use                             general-service
+    hostgroup_name                  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    service_description             web-lb<%= server %>
+    check_command                   check_nrpe_https!web-lb<%= server -%>.klab.cc
+}
+<%
+            rescue
+                scope.function_warning(["No address for 'web-lb" + server.to_s + ".lhm.klab.cc'."])
+            end
+
+        end
+
+        webs = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+        webz = scope.function_nodes_with_class_in_environment([environ, 'webserver']).uniq.sort
+
+        servers = webz - webs
+
+        servers.each do |server|
+
+            [
+                    'check_nrpe_http',
+                    'check_nrpe_https'
+                ].each do |service| %>
+define service {
+    use                             general-service
+    host_name                       <%= server %>
+    service_description             <%= service.gsub(/!.*/,'').split('_')[-1] %>
+    check_command                   <%= service -%>!<%= server %>
+}
+<%
+            end
+        end
+    end
+-%>
+
+##
+## IMAP Services
+##
+<%
+    [
+            'lhm_klab_cc-kolab::Imap::Backend',
+            'lhm_klab_cc-kolab::Imap::Frontend',
+            'lhm_klab_cc-kolab::Imap::Full',
+            'lhm_klab_cc-kolab::Imap::Mupdate'
+        ].each do |pclass|
+
+        ['development','testing','production'].each do |environ|
+
+            servers = scope.function_nodes_with_class_in_environment([environ, pclass]).uniq.sort
+
+            if servers.length > 0 then
+
+                [
+                        'check_nrpe_mailq!50!100',
+                        'check_nrpe_smtp!localhost',
+                        'check_nrpe_auth/admin',
+                        'check_nrpe_auth/domain-user',
+                        'check_nrpe_auth/alias-domain-user'
+                    ].each do |service| %>
+define service {
+    use                             general-service
+    hostgroup_name                  <%= environ.capitalize -%>::<%= pclass.split('::')[-1] %>
+    service_description             <%= service.gsub(/!.*/,'').split('_')[-1] %>
+    check_command                   <%= service %>
+}
+<%
+                end
+            end
+        end
+    end
+-%>
+
+<%
+    ['development','testing','production'].each do |environ|
+
+        servers = scope.function_nodes_with_class_in_environment([environ, 'Mysql::Server']).sort.uniq
+
+        if servers.length > 0 then %>
+define service {
+    use                             passive-service
+    hostgroup_name                  <%= environ.capitalize -%>::Mysql::Server
+    service_description             MySQL Connections
+    obsess_over_service             0
+    notification_options            n
+    check_command                   check_dummy
+}
+<%
+        end
+    end
+%>
+

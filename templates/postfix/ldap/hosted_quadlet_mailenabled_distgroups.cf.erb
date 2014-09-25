@@ -1,0 +1,20 @@
+# Managed by puppet
+
+server_host = <%= scope.lookupvar('kolab::params::ldap_hostname') %>
+server_port = <%= scope.lookupvar('kolab::params::ldap_port') %>
+version = 3
+search_base = ou=Groups,dc=%4,dc=%3,dc=%2,dc=%1
+scope = sub
+
+domain = ldap:/etc/postfix/ldap/hosted_quadlet_mydestination.cf
+
+bind_dn = <%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>
+bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
+
+# This finds the mail enabled distribution group LDAP entry
+query_filter = (&(|(mail=%s)(alias=%s))(objectClass=kolabgroupofuniquenames)(objectclass=groupofuniquenames))
+# From this type of group, get all uniqueMember DNs
+special_result_attribute = uniqueMember
+# Only from those DNs, get the mail
+result_attribute =
+leaf_result_attribute = mail

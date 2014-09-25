@@ -1,0 +1,162 @@
+# Managed by Puppet
+<%
+    hosteddomains = scope.function_titles_for_restype_in_environment([environment, 'kolab::hosteddomain']).uniq
+
+    primary_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
+
+    # Excempt the hosted domain that is special
+    hosteddomains = hosteddomains - [ primary_domain ]
+
+    backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).uniq
+    smtps = scope.function_nodes_with_class_in_environment([environment, 'kolab::mx']).uniq
+-%>
+
+queue_directory = /var/spool/postfix
+command_directory = /usr/sbin
+daemon_directory = /usr/libexec/postfix
+mail_owner = postfix
+default_privs = nobody
+inet_interfaces = all
+<% if smtps.include?(fqdn) then -%>
+mynetworks =
+    127.0.0.0/8
+    10.8.0.0/16
+mynetworks_style = subnet
+<% else %>
+mynetworks = 127.0.0.0/8
+mynetworks_style = host
+<% end %>
+
+smtpd_tls_cert_file = /etc/pki/tls/private/<%= domain -%>.pem
+smtpd_tls_CAfile = /etc/pki/tls/certs/<%= domain -%>.ca.cert
+smtpd_tls_dh1024_param_file = /etc/postfix/dh_1024.pem
+smtpd_tls_dh512_param_file = /etc/postfix/dh_512.pem
+smtpd_tls_auth_only = yes
+smtpd_tls_security_level = may
+smtp_tls_security_level = may
+smtp_tls_CAfile = /etc/pki/tls/certs/ca-bundle.crt
+
+disable_vrfy_command = yes
+smtpd_helo_required = yes
+
+debug_peer_level = 2
+sendmail_path = /usr/sbin/sendmail.postfix
+newaliases_path = /usr/bin/newaliases.postfix
+mailq_path = /usr/bin/mailq.postfix
+setgid_group = postdrop
+
+recipient_delimiter = +
+
+<% if backends.include?(fqdn) or smtps.include?(fqdn) then -%>
+mydestination =
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/mydestination.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/mydestination.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_mydestination.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_mydestination.cf
+
+alias_maps = hash:/etc/aliases
+
+local_recipient_maps = $alias_maps,
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/local_recipient_maps.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/local_recipient_maps.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_local_recipient_maps.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_local_recipient_maps.cf
+
+virtual_alias_maps = $alias_maps,
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/virtual_alias_maps.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/virtual_alias_maps.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_virtual_alias_maps.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_virtual_alias_maps.cf,
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/virtual_alias_maps_mailforwarding.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/virtual_alias_maps_mailforwarding.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_virtual_alias_maps_mailforwarding.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_virtual_alias_maps_mailforwarding.cf,
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/virtual_alias_maps_sharedfolders.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/virtual_alias_maps_sharedfolders.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_virtual_alias_maps_sharedfolders.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_virtual_alias_maps_sharedfolders.cf,
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/mailenabled_distgroups.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/mailenabled_distgroups.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_mailenabled_distgroups.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_mailenabled_distgroups.cf,
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/mailenabled_dynamic_distgroups.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/mailenabled_dynamic_distgroups.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_mailenabled_dynamic_distgroups.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_mailenabled_dynamic_distgroups.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/virtual_alias_maps_catchall.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_virtual_alias_maps_catchall.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_virtual_alias_maps_catchall.cf
+
+transport_maps =
+    ldap:/etc/postfix/ldap/<%= primary_domain -%>/transport_maps.cf,
+<% hosteddomains.each do |hosteddomain| -%>
+    ldap:/etc/postfix/ldap/<%= hosteddomain -%>/transport_maps.cf,
+<% end -%>
+    ldap:/etc/postfix/ldap/hosted_triplet_transport_maps.cf,
+    ldap:/etc/postfix/ldap/hosted_duplet_transport_maps.cf,
+    hash:/etc/postfix/transport
+<% end %>
+
+<% if backends.include?(fqdn) then -%>
+local_transport = relay:[smtp.<%= domain -%>]:25
+relayhost = [smtp.<%= domain -%>]
+<% elsif smtps.include?(fqdn) then -%>
+content_filter = smtp-amavis:[127.0.0.1]:10024
+smtpd_sender_login_maps = $relay_recipient_maps
+
+submission_sender_restrictions =
+    reject_non_fqdn_sender,
+    reject_unlisted_sender,
+    check_policy_service unix:private/submission_policy,
+    permit_sasl_authenticated,
+    reject
+
+submission_recipient_restrictions =
+    check_policy_service unix:private/submission_policy,
+    permit_sasl_authenticated,
+    reject
+
+smtpd_recipient_restrictions =
+    permit_mynetworks,
+    reject_unauth_pipelining,
+    reject_rbl_client zen.spamhaus.org,
+    reject_non_fqdn_recipient,
+    reject_invalid_helo_hostname,
+    reject_unknown_recipient_domain,
+    reject_unauth_destination,
+    check_policy_service unix:private/recipient_policy_incoming,
+    permit
+
+submission_data_restrictions =
+    check_policy_service unix:private/submission_policy
+
+smtpd_sasl_auth_enable = yes
+
+smtpd_sender_restrictions =
+    permit_mynetworks,
+    check_policy_service unix:private/sender_policy_incoming
+<% else %>
+relayhost = [smtp.<%= domain -%>]
+<% end %>
+
+message_size_limit = 31457280
+
+# queue congestion resolution
+default_destination_concurrency_limit = 100
+initial_destination_concurrency = 15

@@ -1,0 +1,174 @@
+# Managed by Puppet
+<%
+    if environment == "development" then
+        debug_flag = " -D"
+    else
+        debug_flag = ""
+    end
+    debug_flag = ""
+
+    enable_notify = scope.lookupvar("kolab::params::imap_enable_notify")
+    if enable_notify != true then
+        enable_notify = false
+    end
+
+    enable_pop = scope.lookupvar("kolab::params::imap_enable_pop")
+    if enable_pop != true then
+        enable_pop = false
+    end
+
+    enable_ptloader = scope.lookupvar("kolab::params::imap_enable_ptloader")
+    if enable_ptloader != true then
+        enable_ptloader = false
+    end
+
+    backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).sort.uniq
+    frontends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::frontend']).sort.uniq
+    mupdate = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::mupdate']).sort.uniq
+
+    if backends.include?(fqdn) || classes.include?('kolab::imap::backend') then
+        role = "backend"
+    elsif frontends.include?(fqdn) || classes.include?('kolab::imap::frontend') then
+        role = "frontend"
+    elsif mupdate.include?(fqdn) || classes.include?('kolab::imap::mupdate') then
+        role = "mupdate"
+    else
+        role = "full"
+    end
+
+    socket_path = scope.lookupvar("kolab::params::imap::imap_socket_path")
+
+    if !@socket_path then
+        socket_path = scope.lookupvar("kolab::params::imap_socket_path")
+    end
+
+    if !@socket_path then
+        socket_path = "/var/lib/imap/socket"
+    end
+-%>
+
+START {
+    # do not delete this entry!
+    recover     cmd="ctl_cyrusdb -r"
+
+<% if defined?(role) && role == "frontend" then -%>
+    # this is only necessary if using idled for IMAP IDLE
+    idled       cmd="idled"
+<% end -%>
+
+<% if defined?(role) && role == "backend" then -%>
+    # Push out my current list of mailboxes to the master update server
+    mupdate     cmd="ctl_mboxlist -m"
+<% end -%>
+
+}
+
+SERVICES {
+
+<% if defined?(role) && role == "backend" then -%>
+    ##
+    ## Backend
+    ##
+
+    imap        cmd="imapd<%= debug_flag -%>"         listen="imap"                       prefork=1
+    imaps       cmd="imapd<%= debug_flag -%> -s"      listen="imaps"                      prefork=1
+
+<% if defined?(enable_pop) && enable_pop -%>
+    pop3        cmd="pop3d<%= debug_flag -%>"         listen="pop3"                       prefork=1
+    pop3s       cmd="pop3d<%= debug_flag -%> -s"      listen="pop3s"                      prefork=1
+<% end -%>
+
+    sieve       cmd="timsieved<%= debug_flag -%>"     listen=sieve                        prefork=1
+
+    lmtpunix    cmd="lmtpd<%= debug_flag -%>"         listen="<%= socket_path -%>/lmtp"    prefork=0
+
+<% if defined?(enable_notify) && enable_notify -%>
+    notify    cmd="notifyd<%= debug_flag -%>" listen="<%= socket_path -%>/notify" proto="udp" prefork=1
+<% end -%>
+
+<% if defined?(enable_ptloader) && enable_ptloader -%>
+    ptloader    cmd="ptloader<%= debug_flag -%>"      listen="<%= socket_path -%>/ptsock"  prefork=1
+<% end -%>
+
+<% elsif defined?(role) && role == "frontend" then -%>
+    ##
+    ## Frontend
+    ##
+
+    mupdate     cmd="mupdate<%= debug_flag -%>"       listen=3905                         prefork=1
+
+    imap        cmd="proxyd<%= debug_flag -%>"        listen="imap"                       prefork=1 maxchild=4096
+    imaps       cmd="proxyd<%= debug_flag -%> -s"     listen="imaps"                      prefork=1 maxchild=4096
+
+<% if enable_pop -%>
+    pop3        cmd="pop3d<%= debug_flag -%>"         listen="pop3"                       prefork=1
+    pop3s       cmd="pop3d<%= debug_flag -%> -s"      listen="pop3s"                      prefork=1
+<% end -%>
+
+<% if defined?(enable_notify) && enable_notify -%>
+    notify    cmd="notifyd<%= debug_flag -%>" listen="<%= socket_path -%>/notify" proto="udp" prefork=1
+<% end -%>
+
+<% if defined?(enable_ptloader) && enable_ptloader -%>
+    ptloader    cmd="ptloader<%= debug_flag -%>"      listen="<%= socket_path -%>/ptsock"  prefork=1
+<% end -%>
+
+    sieve       cmd="timsieved<%= debug_flag -%>"     listen=sieve                        prefork=1
+
+<% elsif defined?(role) && role == "mupdate" then -%>
+    ##
+    ## MUPDATE Master
+    ##
+
+    mupdate     cmd="mupdate<%= debug_flag -%> -m"    listen=3905                         prefork=0
+
+<% if defined?(enable_ptloader) && enable_ptloader -%>
+    ptloader    cmd="ptloader<%= debug_flag -%>"      listen="<%= socket_path -%>/ptsock"  prefork=1
+<% end -%>
+
+<% else -%>
+    ##
+    ## Standalone IMAP server
+    ##
+
+    imap        cmd="imapd<%= debug_flag -%>"         listen="imap"                       prefork=1
+    imaps       cmd="imapd<%= debug_flag -%> -s"      listen="imaps"                      prefork=1
+
+<% if defined?(enable_pop) && enable_pop -%>
+    pop3        cmd="pop3d<%= debug_flag -%>"         listen="pop3"                       prefork=1
+    pop3s       cmd="pop3d<%= debug_flag -%> -s"      listen="pop3s"                      prefork=1
+<% end -%>
+
+    lmtpunix    cmd="lmtpd<%= debug_flag -%>"         listen="<%= socket_path -%>/lmtp"    prefork=0
+
+<% if defined?(enable_notify) && enable_notify -%>
+    notify    cmd="notifyd<%= debug_flag -%>" listen="<%= socket_path -%>/notify" proto="udp" prefork=1
+<% end -%>
+
+<% if defined?(enable_ptloader) && enable_ptloader -%>
+    ptloader    cmd="ptloader<%= debug_flag -%>"      listen="<%= socket_path -%>/ptsock"  prefork=1
+<% end -%>
+
+    sieve       cmd="timsieved<%= debug_flag -%>"     listen=sieve                        prefork=1
+
+<% end -%>
+}
+
+EVENTS {
+    # this is required
+    checkpoint  cmd="ctl_cyrusdb<%= debug_flag -%> -c" period=30
+
+    # this is only necessary if using duplicate delivery suppression,
+    # Sieve or NNTP
+    duplicateprune cmd="cyr_expire<%= debug_flag -%> -E 3" at=0400
+
+    # Expire data older than 28 days.
+    deleteprune cmd="cyr_expire<%= debug_flag -%> -E 4 -D 28" at=0430
+    expungeprune cmd="cyr_expire<%= debug_flag -%> -E 4 -X 28" at=0445
+
+    # this is only necessary if caching TLS sessions
+    tlsprune    cmd="tls_prune<%= debug_flag -%>" at=0400
+
+    # Index
+    squatter    cmd="squatter<%= debug_flag -%> -s -i" at=0130
+}
