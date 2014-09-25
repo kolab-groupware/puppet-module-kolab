@@ -9,14 +9,6 @@ class kolab::imap inherits kolab::common {
             ]
     }
 
-#     file { "/etc/bonnie/bonnie.conf":
-#         source => "puppet://$server/private/$environment/files/bonnie/bonnie.conf",
-#         require => Package["bonnie-dealer"],
-#         owner => "cyrus",
-#         group => "mail",
-#         mode => "640"
-#     }
-#
     @file { "/etc/cyrus.conf":
         require => Package["cyrus-imapd"],
         notify => Service["cyrus-imapd"],
@@ -89,10 +81,6 @@ class kolab::imap inherits kolab::common {
         conf_name => "cyrus-imapd"
     }
 
-#     package { "bonnie-dealer":
-#         ensure => getvar("kolab::pkg::bonnie_dealer_version")
-#     }
-#
     package { "cyrus-imapd":
         ensure => getvar("kolab::pkg::cyrus_imapd_version")
     }
