@@ -1,5 +1,10 @@
 # Managed by Puppet
 <%
+    enable_notify = scope.lookupvar("kolab::params::imap_enable_notify")
+    if enable_notify != true then
+        enable_notify = false
+    end
+
     enable_ptloader = scope.lookupvar("kolab::params::imap_enable_ptloader")
     if enable_ptloader != true then
         enable_ptloader = false
@@ -161,6 +166,8 @@ debug_command: /usr/bin/gdb /usr/lib/cyrus-imapd/%s %d
 chatty: 1
 #iolog: 1
 auditlog: 1
+<% end -%>
+<% if enable_notify then -%>
 event_content_inclusion_mode: standard
 event_content_size: 0
 # Only available with fastmail patches
@@ -171,7 +178,7 @@ event_groups: message quota flags access mailbox
 event_notifier: external
 sievenotifier: external
 notify_external: /usr/bin/bonnie-dealer
-<% end %>
+<% end -%>
 
 <% if (role == "backend" || role == "frontend" || role == "mupdate") -%>
 mupdate_config: standard
