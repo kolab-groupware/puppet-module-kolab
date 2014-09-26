@@ -1,14 +1,14 @@
 # Managed by Puppet
 <%
-    hosteddomains = scope.function_titles_for_restype_in_environment([environment, 'kolab::hosteddomain']).uniq
+    hosteddomains = scope.function_titles_for_restype_in_environment([@environment, 'kolab::hosteddomain']).uniq
 
     primary_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
 
     # Excempt the hosted domain that is special
     hosteddomains = hosteddomains - [ primary_domain ]
 
-    backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).uniq
-    smtps = scope.function_nodes_with_class_in_environment([environment, 'kolab::mx']).uniq
+    backends = scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::backend']).uniq
+    smtps = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx']).uniq
 -%>
 
 queue_directory = /var/spool/postfix
@@ -17,7 +17,7 @@ daemon_directory = /usr/libexec/postfix
 mail_owner = postfix
 default_privs = nobody
 inet_interfaces = all
-<% if smtps.include?(fqdn) then -%>
+<% if smtps.include?(@fqdn) then -%>
 mynetworks =
     127.0.0.0/8
     10.8.0.0/16
@@ -47,7 +47,7 @@ setgid_group = postdrop
 
 recipient_delimiter = +
 
-<% if backends.include?(fqdn) or smtps.include?(fqdn) then -%>
+<% if backends.include?(@fqdn) or smtps.include?(@fqdn) then -%>
 mydestination =
     ldap:/etc/postfix/ldap/<%= primary_domain -%>/mydestination.cf,
 <% hosteddomains.each do |hosteddomain| -%>
@@ -113,10 +113,10 @@ transport_maps =
     hash:/etc/postfix/transport
 <% end %>
 
-<% if backends.include?(fqdn) then -%>
+<% if backends.include?(@fqdn) then -%>
 local_transport = relay:[smtp.<%= domain -%>]:25
 relayhost = [smtp.<%= domain -%>]
-<% elsif smtps.include?(fqdn) then -%>
+<% elsif smtps.include?(@fqdn) then -%>
 content_filter = smtp-amavis:[127.0.0.1]:10024
 smtpd_sender_login_maps = $relay_recipient_maps
 
