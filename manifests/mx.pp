@@ -14,12 +14,23 @@ class kolab::mx inherits kolab::common {
             creates => "/etc/postfix/dh_512.pem"
         }
 
+        exec { "postmap__etc_postfix_transport":
+            command => "postmap /etc/postfix/transport",
+            refreshonly => true
+        }
     }
 
     class amavisd inherits kolab::common {
     }
 
     class backend inherits kolab::mx::ldap {
+        file { "/etc/postfix/transport":
+            owner => "root",
+            group => "root",
+            mode => "640",
+            content => template("kolab/postfix/transport.erb"),
+            notify => Exec["postmap__etc_postfix_transport"]
+        }
     }
 
     class external inherits kolab::mx::common {
