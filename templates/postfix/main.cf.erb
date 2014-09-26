@@ -114,8 +114,7 @@ virtual_alias_maps = $alias_maps,
     ldap:/etc/postfix/ldap/hosted_triplet_virtual_alias_maps_catchall.cf,
     ldap:/etc/postfix/ldap/hosted_duplet_virtual_alias_maps_catchall.cf
 
-transport_maps =
-    ldap:/etc/postfix/ldap/<%= primary_domain -%>/transport_maps.cf,
+transport_maps = ldap:/etc/postfix/ldap/<%= primary_domain -%>/transport_maps.cf,
 <% hosteddomains.each do |hosteddomain| -%>
     ldap:/etc/postfix/ldap/<%= hosteddomain -%>/transport_maps.cf,
 <% end -%>
