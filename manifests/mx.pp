@@ -46,6 +46,13 @@ class kolab::mx inherits kolab::common {
 
         Kolab::Hosteddomain <||>
 
+        file { "/etc/postfix/ldap/mydestination.cf":
+            owner => "root",
+            group => "root",
+            mode => 640,
+            content => template("kolab/postfix/ldap/mydestination.cf.erb")
+        }
+
         file { "/etc/postfix/ldap/hosted_duplet_local_recipient_maps.cf":
             owner => "root",
             group => "root",
