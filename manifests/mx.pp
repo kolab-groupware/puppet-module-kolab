@@ -242,5 +242,17 @@ class kolab::mx inherits kolab::common {
             content => template("kolab/postfix/ldap/hosted_quadlet_virtual_alias_maps_sharedfolders.cf.erb")
         }
 
+        package { "wallace":
+            ensure => getvar("kolab::pkg::wallace_version")
+        }
+
+        service { "wallace":
+            ensure => running,
+            enable => true,
+            require => [
+                    File["/etc/kolab/kolab.conf"],
+                    Package["wallace"]
+                ]
+        }
     }
 }
