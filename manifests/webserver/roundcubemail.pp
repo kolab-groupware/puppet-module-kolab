@@ -21,6 +21,7 @@ class kolab::webserver::roundcubemail inherits kolab::webserver::common {
             Package["php-pecl-memcache"],
             Package["roundcubemail"],
             Package["roundcubemail-plugin-archive"],
+            Package["roundcubemail-plugin-contextmenu"],
             Package["roundcubemail-plugin-markasjunk"],
             Package["roundcubemail-plugins-kolab"],
             Webserver::Module::Enable["mod_authz_core"],
