@@ -19,6 +19,9 @@ class kolab::mx inherits kolab::common {
     class amavisd inherits kolab::common {
     }
 
+    class backend inherits kolab::mx::common {
+    }
+
     class external inherits kolab::mx::common {
         class inbound inherits kolab::mx::external {
             # For anti-spam, anti-virus

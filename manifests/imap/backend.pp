@@ -1,4 +1,6 @@
 class kolab::imap::backend inherits kolab::imap {
+    include kolab::mx::backend
+
     File["/etc/cyrus.conf"] {
         content => template("kolab/cyrus-imapd/cyrus.conf.erb")
     }
