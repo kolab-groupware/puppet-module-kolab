@@ -8,15 +8,18 @@
     hosteddomains = hosteddomains - [ primary_domain ]
 
     backends = scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::backend']).uniq
-    if not backends.include?(@fqdn) && classes.include?('kolab::imap::backend') then
-        backends << @fqdn
+    if not backends.include?(@fqdn) then
+        if classes.include?('kolab::imap::backend') then
+            backends << @fqdn
+        end
     end
 
     intmxs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::internal']).uniq
-    if not intmxs.include?(@fqdn) && classes.include?('kolab::mx::internal') then
-        intmxs << @fqdn
+    if not intmxs.include?(@fqdn) then
+        if classes.include?('kolab::mx::internal') then
+            intmxs << @fqdn
+        end
     end
-
 -%>
 
 queue_directory = /var/spool/postfix
