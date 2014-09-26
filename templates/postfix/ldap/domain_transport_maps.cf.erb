@@ -12,17 +12,21 @@ bind_dn = <%= scope.lookupvar('kolab::params::ldap_service_bind_dn') %>
 bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
 
 <%
-    socket_path = scope.lookupvar('socket_path')
-
-    if !@socket_path then
-        socket_path = "/var/lib/imap/socket"
+    backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).sort.uniq
+    frontends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::frontend']).sort.uniq
+    if backends.include?(fqdn) || classes.include?('kolab::imap::backend') then
+        role = "backend"
+    elsif frontends.include?(fqdn) || classes.include?('kolab::imap::frontend') then
+        role = "frontend"
+    elsif mupdate.include?(fqdn) || classes.include?('kolab::imap::mupdate') then
+        role = "mupdate"
+    else
+        role = "full"
     end
 
-    role = scope.lookupvar('kolab::params::Imap::Backend::role')
-    if !@role then
-        if scope.function_nodes_with_class(['kolab::params::Imap::Full']).include?(fqdn)
-            role = "full"
-        end
+    socket_path = scope.lookupvar("kolab::params::imap::imap_socket_path")
+    if !@socket_path then
+        socket_path = "/var/lib/imap/socket"
     end
 -%>
 query_filter = (&(mail=%s)(|(objectclass=kolabinetorgperson)(objectclass=kolabsharedfolder))<% if role == "backend" then -%>(mailhost=<%= fqdn -%>)<% end -%>)
