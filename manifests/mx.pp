@@ -19,7 +19,7 @@ class kolab::mx inherits kolab::common {
     class amavisd inherits kolab::common {
     }
 
-    class backend inherits kolab::mx::common {
+    class backend inherits kolab::mx::ldap {
     }
 
     class external inherits kolab::mx::common {
@@ -33,9 +33,24 @@ class kolab::mx inherits kolab::common {
         }
     }
 
-    class internal inherits kolab::mx::common {
+    class internal inherits kolab::mx::ldap {
         realize(Nagios::Plugin['check_saslauthd'])
 
+        package { "wallace":
+            ensure => getvar("kolab::pkg::wallace_version")
+        }
+
+        service { "wallace":
+            ensure => running,
+            enable => true,
+            require => [
+                    File["/etc/kolab/kolab.conf"],
+                    Package["wallace"]
+                ]
+        }
+    }
+
+    class ldap inherits kolab::mx::common {
         file { "/etc/postfix/ldap/":
             ensure => directory,
             owner => "root",
@@ -243,19 +258,6 @@ class kolab::mx inherits kolab::common {
             group => "root",
             mode => "640",
             content => template("kolab/postfix/ldap/hosted_quadlet_virtual_alias_maps_sharedfolders.cf.erb")
-        }
-
-        package { "wallace":
-            ensure => getvar("kolab::pkg::wallace_version")
-        }
-
-        service { "wallace":
-            ensure => running,
-            enable => true,
-            require => [
-                    File["/etc/kolab/kolab.conf"],
-                    Package["wallace"]
-                ]
         }
     }
 }
