@@ -97,4 +97,17 @@ class kolab::imap inherits kolab::common {
                 Package["cyrus-imapd"]
             ]
     }
+
+    if (!defined(User["cyrus"])) {
+        @user { "cyrus":
+            ensure => present,
+            uid => 76,
+            gid => 12,
+            comment => "Cyrus IMAP Server",
+            shell => "/sbin/nologin",
+            home => "/var/lib/imap/"
+        }
+    }
+
+    realize(User["cyrus"])
 }
