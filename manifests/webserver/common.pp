@@ -196,13 +196,23 @@ class kolab::webserver::common inherits kolab::common {
             ]
     }
 
-    @webserver::module::enable { [
-                "mod_authz_core",
-                "mod_slotmem_shm",
-                "mod_socache_shmcb",
-                "mod_ssl",
-                "mod_unixd",
-                "php"
-            ]:
-        }
+    if (!defined(Webserver::Module::Enable["mod_authz_core"])) {
+        @webserver::module::enable { "mod_authz_core": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_slotmem_shm"])) {
+        @webserver::module::enable { "mod_slotmem_shm": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_socache_shmcb"])) {
+        @webserver::module::enable { "mod_socache_shmcb": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_ssl"])) {
+        @webserver::module::enable { "mod_ssl": }
+    }
+
+    if (!defined(Webserver::Module::Enable["php"])) {
+        @webserver::module::enable { "php": }
+    }
 }
