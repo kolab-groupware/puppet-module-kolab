@@ -182,13 +182,6 @@ class kolab::webserver::common inherits kolab::common {
             ]
     }
 
-    @package { "roundcubemail-plugin-contextmenu":
-        ensure => getvar("kolab::pkg::roundcubemail_plugin_contextmenu_version"),
-        require => [
-                Package["roundcubemail"]
-            ]
-    }
-
     @package { "roundcubemail-plugin-markasjunk":
         ensure => getvar("kolab::pkg::roundcubemail_plugin_markasjunk_version"),
         require => [
