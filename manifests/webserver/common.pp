@@ -212,6 +212,10 @@ class kolab::webserver::common inherits kolab::common {
         @webserver::module::enable { "mod_ssl": }
     }
 
+    if (!defined(Webserver::Module::Enable["mod_unixd"])) {
+        @webserver::module::enable { "mod_unixd": }
+    }
+
     if (!defined(Webserver::Module::Enable["php"])) {
         @webserver::module::enable { "php": }
     }
