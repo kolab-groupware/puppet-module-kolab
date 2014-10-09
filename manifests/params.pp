@@ -29,6 +29,7 @@ class kolab::params (
             $kolab_primary_domain = "$domain",
             $kolab_default_locale = "en_US",
             $kolab_policy_uid = "%(surname)s.lower()",
+            $kolab_freebusy_server = "http://$fqdn/",
 
             $memcache_hosts = undef,
             $webclient_memcache_hosts = $kolab::params::memcache_hosts,
