@@ -1,6 +1,6 @@
 <?php
 
-    $config['kolab_freebusy_server'] = '<%= scope.lookupvar("kolab::params::roundcubemail_kolab_freebusy_server") -%>';
+    $config['kolab_freebusy_server'] = '<%= scope.lookupvar("kolab::params::kolab_freebusy_server") -%>';
 
     if (file_exists(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
