@@ -18,13 +18,8 @@ class kolab::mx inherits kolab::common {
             command => "postmap /etc/postfix/transport",
             refreshonly => true
         }
-    }
 
-    class amavisd inherits kolab::common {
-    }
-
-    class backend inherits kolab::mx::ldap {
-        file { "/etc/postfix/transport":
+        @file { "/etc/postfix/transport":
             owner => "root",
             group => "root",
             mode => "640",
@@ -33,7 +28,16 @@ class kolab::mx inherits kolab::common {
         }
     }
 
+    class amavisd inherits kolab::common {
+    }
+
+    class backend inherits kolab::mx::ldap {
+        realize(File["/etc/postfix/transport"])
+    }
+
     class external inherits kolab::mx::common {
+        realize(File["/etc/postfix/transport"])
+
         class inbound inherits kolab::mx::external {
             # For anti-spam, anti-virus
             include kolab::mx::amavisd
@@ -46,6 +50,8 @@ class kolab::mx inherits kolab::common {
     }
 
     class internal inherits kolab::mx::ldap {
+        realize(File["/etc/postfix/transport"])
+
         realize(Nagios::Plugin['check_saslauthd'])
 
         package { "wallace":
