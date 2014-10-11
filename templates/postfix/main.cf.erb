@@ -49,7 +49,7 @@ daemon_directory = /usr/libexec/postfix
 mail_owner = postfix
 default_privs = nobody
 inet_interfaces = all
-<% if intmxs.include?(@fqdn) then -%>
+<% if intmxs.include?(@fqdn) or extmxs_out.include?(@fqdn) then -%>
 mynetworks =
     127.0.0.0/8
     10.8.0.0/16
