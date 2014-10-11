@@ -14,11 +14,12 @@ bind_pw = <%= scope.lookupvar('kolab::params::ldap_service_bind_pw') %>
 <%
     backends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::backend']).sort.uniq
     frontends = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::frontend']).sort.uniq
+    mupdates = scope.function_nodes_with_class_in_environment([environment, 'kolab::imap::mupdate']).sort.uniq
     if backends.include?(fqdn) || classes.include?('kolab::imap::backend') then
         role = "backend"
     elsif frontends.include?(fqdn) || classes.include?('kolab::imap::frontend') then
         role = "frontend"
-    elsif mupdate.include?(fqdn) || classes.include?('kolab::imap::mupdate') then
+    elsif mupdates.include?(fqdn) || classes.include?('kolab::imap::mupdate') then
         role = "mupdate"
     else
         role = "full"
