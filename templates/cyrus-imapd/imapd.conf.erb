@@ -161,11 +161,11 @@ postuser: shared
 
 syslog_prefix: cyrus-imapd
 <% if environment == "development" then %>
-debug: 1
+debug: <%= scope.lookupvar("kolab::params::imap_debug") %>
 debug_command: /usr/bin/gdb /usr/lib/cyrus-imapd/%s %d
-chatty: 1
+chatty: <%= scope.lookupvar("kolab::params::imap_chatty") %>
 #iolog: 1
-auditlog: 1
+auditlog: <%= scope.lookupvar("kolab::params::imap_auditlog") %>
 <% end -%>
 <% if enable_notify then -%>
 event_content_inclusion_mode: standard

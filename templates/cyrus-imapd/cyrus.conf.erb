@@ -1,6 +1,8 @@
 # Managed by Puppet
 <%
-    if environment == "development" then
+    enable_debug = scope.lookupvar("kolab::params::imap_debug")
+
+    if environment == "development" and enable_debug == 1 then
         debug_flag = " -D"
     else
         debug_flag = ""

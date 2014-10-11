@@ -10,6 +10,10 @@ class kolab::params (
             $imap_port = "993",
             $imap_scheme = "imaps",
 
+            $imap_debug = 0,
+            $imap_chatty = 0,
+            $imap_auditlog = 0,
+
             $imap_storage_partitions = [ "default" ],
             $imap_storage_meta_base_path = undef,
             $imap_storage_spool_base_path = "/var/spool/imap",
