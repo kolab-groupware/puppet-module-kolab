@@ -127,6 +127,7 @@ transport_maps = ldap:/etc/postfix/ldap/<%= primary_domain -%>/transport_maps.cf
 local_transport = relay:[smtp.<%= @domain -%>]:25
 relayhost = [smtp.<%= @domain -%>]
 <% elsif intmxs.include?(@fqdn) then -%>
+relayhost = [smtp.<%= @domain -%>]
 content_filter = smtp-amavis:[127.0.0.1]:10024
 smtpd_sender_login_maps = $relay_recipient_maps
 
