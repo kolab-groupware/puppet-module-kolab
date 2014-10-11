@@ -105,7 +105,7 @@ class kolab::imap inherits kolab::common {
             gid => 12,
             comment => "Cyrus IMAP Server",
             shell => "/sbin/nologin",
-            home => "/var/lib/imap/"
+            home => "/var/lib/imap"
         }
     }
 

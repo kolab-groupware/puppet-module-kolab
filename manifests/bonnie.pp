@@ -3,7 +3,8 @@ class kolab::bonnie {
         source => "puppet://$server/private/$environment/files/bonnie/bonnie.conf",
         owner => "cyrus",
         group => "mail",
-        mode => "640"
+        mode => "640",
+        require => User["cyrus"]
     }
 
     if (!defined(User["cyrus"])) {
@@ -13,7 +14,7 @@ class kolab::bonnie {
             gid => 12,
             comment => "Cyrus IMAP Server",
             shell => "/sbin/nologin",
-            home => "/var/lib/imap/"
+            home => "/var/lib/imap"
         }
     }
 
