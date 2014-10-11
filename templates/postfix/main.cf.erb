@@ -20,6 +20,27 @@
             intmxs << @fqdn
         end
     end
+
+    extmxs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external']).uniq
+    if not extmxs.include?(@fqdn) then
+        if classes.include?('kolab::mx::external') then
+            extmxs << @fqdn
+        end
+    end
+
+    extmxs_out = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::outbound']).uniq
+    if not extmxs_out.include?(@fqdn) then
+        if classes.include?('kolab::mx::external::outbound') then
+            extmxs_out << @fqdn
+        end
+    end
+
+    extmxs_in = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::inbound']).uniq
+    if not extmxs_in.include?(@fqdn) then
+        if classes.include?('kolab::mx::external::inbound') then
+            extmxs_in << @fqdn
+        end
+    end
 -%>
 
 queue_directory = /var/spool/postfix
@@ -162,6 +183,7 @@ smtpd_sasl_auth_enable = yes
 smtpd_sender_restrictions =
     permit_mynetworks,
     check_policy_service unix:private/sender_policy_incoming
+<% elsif extmxs_out.include?(@fqdn) then -%>
 <% else %>
 relayhost = [smtp.<%= @domain -%>]
 <% end %>
