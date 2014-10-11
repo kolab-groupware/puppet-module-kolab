@@ -38,7 +38,8 @@ class kolab::mx inherits kolab::common {
             # For anti-spam, anti-virus
             include kolab::mx::amavisd
         }
-        class outbound inherits external {
+
+        class outbound inherits kolab::mx::external {
             # For DKIM
             include kolab::mx::amavisd
         }
