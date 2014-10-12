@@ -19,13 +19,6 @@ class kolab::mx inherits kolab::common {
             refreshonly => true
         }
 
-        @file { "/etc/postfix/master.cf":
-            owner => "root",
-            group => "root",
-            mode => "640",
-            notify => Service["postfix"]
-        }
-
         @file { "/etc/postfix/transport":
             owner => "root",
             group => "root",
@@ -60,12 +53,6 @@ class kolab::mx inherits kolab::common {
         realize(File["/etc/postfix/transport"])
 
         realize(Nagios::Plugin['check_saslauthd'])
-
-        File["/etc/postfix/master.cf"] {
-            content => template("kolab/postfix/master.cf.erb")
-        }
-
-        realize(File["/etc/postfix/master.cf"])
 
         package { "wallace":
             ensure => getvar("kolab::pkg::wallace_version")
