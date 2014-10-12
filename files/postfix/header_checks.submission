@@ -1,0 +1,5 @@
+/^Received:.*with ESMTPSA/  IGNORE
+/^Received:.*127\.0\.0\.1/  IGNORE
+/^User-Agent:/              IGNORE
+/^X-Mailer:/                IGNORE
+/^Mime-Version:/            IGNORE

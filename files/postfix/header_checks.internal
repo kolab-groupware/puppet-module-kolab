@@ -1,0 +1,2 @@
+/^Received:.*127\.0\.0\.1/  IGNORE
+/^X-PHP-Originating-Script:.*/  IGNORE

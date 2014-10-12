@@ -54,6 +54,45 @@ class kolab::mx inherits kolab::common {
 
         realize(Nagios::Plugin['check_saslauthd'])
 
+        exec { "postmap__etc_postfix_header_checks_inbound":
+            command => "postmap /etc/postfix/header_checks.inbound",
+            refreshonly => true
+        }
+
+        exec { "postmap__etc_postfix_header_checks_internal":
+            command => "postmap /etc/postfix/header_checks.internal",
+            refreshonly => true
+        }
+
+        exec { "postmap__etc_postfix_header_checks_submission":
+            command => "postmap /etc/postfix/header_checks.submission",
+            refreshonly => true
+        }
+
+        file { "/etc/postfix/header_checks.inbound":
+            source => [
+                    "puppet://$server/private/$environment/postfix/header_checks.inbound",
+                    "puppet://$server/modules/kolab/postfix/header_checks.inbound"
+                ],
+            notify => Exec["postmap__etc_postfix_header_checks_inbound"]
+        }
+
+        file { "/etc/postfix/header_checks.internal":
+            source => [
+                    "puppet://$server/private/$environment/postfix/header_checks.internal",
+                    "puppet://$server/modules/kolab/postfix/header_checks.internal"
+                ],
+            notify => Exec["postmap__etc_postfix_header_checks_internal"]
+        }
+
+        file { "/etc/postfix/header_checks.submission":
+            source => [
+                    "puppet://$server/private/$environment/postfix/header_checks.submission",
+                    "puppet://$server/modules/kolab/postfix/header_checks.submission"
+                ],
+            notify => Exec["postmap__etc_postfix_header_checks_submission"]
+        }
+
         package { "wallace":
             ensure => getvar("kolab::pkg::wallace_version")
         }

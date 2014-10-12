@@ -1,0 +1,4 @@
+/^X-Spam-Flag:.*YES/    REJECT
+/^X-Virus-Scanned:/     IGNORE
+/^X-Spam-(Flag):(.*NO)/                 REPLACE X-Orig-Spam-$(1):$(2)   
+/^X-Spam-(Score|Level|Status):(.*)/     REPLACE X-Orig-Spam-$(1):$(2)
