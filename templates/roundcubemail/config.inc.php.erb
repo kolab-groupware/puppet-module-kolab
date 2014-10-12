@@ -161,12 +161,11 @@
             // 'logon_page',
             'managesieve',
             'markasjunk',
-            'newmail_notifier',
+            //'newmail_notifier',
             'odfviewer',
             'password',
             'redundant_attachments',
             'tasklist',
-            'threading_as_default',
             // contextmenu must be after kolab_addressbook (#444)
             'contextmenu',
         );
@@ -186,6 +185,7 @@
     $config['dont_override'] = Array('skin');
 
     $config['message_sort_col'] = 'date';
+    $config['default_list_mode'] = 'threads';
 
     $config['spellcheck_engine'] = 'pspell';
     $config['spellcheck_dictionary'] = true;
