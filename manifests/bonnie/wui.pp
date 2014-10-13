@@ -12,7 +12,6 @@ class kolab::bonnie::wui inherits kolab::bonnie {
     }
 
     webserver::module::enable { "mod_wsgi":
-        enable => true
     }
 
     @webserver::virtualhost { "bonnie.${vhost_domain}":
