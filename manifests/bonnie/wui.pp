@@ -1,6 +1,11 @@
 class kolab::bonnie::wui inherits kolab::bonnie {
     include webserver
 
+    package { "bonnie-flask":
+        ensure => getvar("kolab::pkg::bonnie_flask_version"),
+        require => Yum::Repository["kolab-14-extras-audit"]
+    }
+
     package { "bonnie-wui":
         ensure => getvar("kolab::pkg::bonnie_wui_version"),
         require => Yum::Repository["kolab-14-extras-audit"]
