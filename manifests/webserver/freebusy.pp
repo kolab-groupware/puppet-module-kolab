@@ -18,4 +18,14 @@ class kolab::webserver::freebusy inherits kolab::webserver::common {
         certificate => true,
         template => "kolab/webserver/sites/freebusy.conf.erb"
     }
+
+    realize(
+            Webserver::Module::Enable["mod_authz_core"],
+            Webserver::Module::Enable["mod_slotmem_shm"],
+            Webserver::Module::Enable["mod_socache_shmcb"],
+            Webserver::Module::Enable["mod_ssl"],
+            Webserver::Module::Enable["mod_unixd"],
+            Webserver::Module::Enable["php"],
+            Webserver::Virtualhost["freebusy.${vhost_domain}"]
+        )
 }
