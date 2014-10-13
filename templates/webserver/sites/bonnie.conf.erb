@@ -8,6 +8,12 @@
         vhost_domain = @domain
     end
 -%>
+
+WSGISocketPrefix run/wsgi
+WSGIRestrictStdout On
+WSGIRestrictSignal Off
+WSGIPythonOptimize 1
+
 <VirtualHost *:80>
     ServerName bonnie.<%= vhost_domain %>
     ServerAdmin support@kolabsys.com
@@ -46,10 +52,6 @@
     SSLCACertificateFile /etc/pki/tls/certs/bonnie.<%= vhost_domain -%>.ca.cert
 
     WSGIDaemonProcess bonnie user=apache maximum-requests=1000 display-name=bonnie processes=2 threads=1
-    WSGISocketPrefix run/wsgi
-    WSGIRestrictStdout On
-    WSGIRestrictSignal Off
-    WSGIPythonOptimize 1
 
     WSGIScriptAlias / /usr/share/bonnie-flask/bonnie-flask.wsgi
 
