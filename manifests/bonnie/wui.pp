@@ -1,6 +1,8 @@
 class kolab::bonnie::wui inherits kolab::bonnie {
     include webserver
 
+    $vhost_domain = getvar("kolab::params::kolab_primary_domain")
+
     package { "bonnie-flask":
         ensure => getvar("kolab::pkg::bonnie_flask_version"),
         require => Yum::Repository["kolab-14-extras-audit"]
