@@ -20,6 +20,30 @@ class kolab::mx inherits kolab::common {
             refreshonly => true
         }
 
+        file { "/etc/postfix/header_checks.inbound":
+            source => [
+                    "puppet://$server/private/$environment/postfix/header_checks.inbound",
+                    "puppet://$server/modules/kolab/postfix/header_checks.inbound"
+                ],
+            notify => Exec["postmap__etc_postfix_header_checks_inbound"]
+        }
+
+        file { "/etc/postfix/header_checks.internal":
+            source => [
+                    "puppet://$server/private/$environment/postfix/header_checks.internal",
+                    "puppet://$server/modules/kolab/postfix/header_checks.internal"
+                ],
+            notify => Exec["postmap__etc_postfix_header_checks_internal"]
+        }
+
+        file { "/etc/postfix/header_checks.submission":
+            source => [
+                    "puppet://$server/private/$environment/postfix/header_checks.submission",
+                    "puppet://$server/modules/kolab/postfix/header_checks.submission"
+                ],
+            notify => Exec["postmap__etc_postfix_header_checks_submission"]
+        }
+
         @file { "/etc/postfix/transport":
             owner => "root",
             group => "root",
@@ -139,30 +163,6 @@ class kolab::mx inherits kolab::common {
         exec { "postmap__etc_postfix_header_checks_submission":
             command => "postmap /etc/postfix/header_checks.submission",
             refreshonly => true
-        }
-
-        file { "/etc/postfix/header_checks.inbound":
-            source => [
-                    "puppet://$server/private/$environment/postfix/header_checks.inbound",
-                    "puppet://$server/modules/kolab/postfix/header_checks.inbound"
-                ],
-            notify => Exec["postmap__etc_postfix_header_checks_inbound"]
-        }
-
-        file { "/etc/postfix/header_checks.internal":
-            source => [
-                    "puppet://$server/private/$environment/postfix/header_checks.internal",
-                    "puppet://$server/modules/kolab/postfix/header_checks.internal"
-                ],
-            notify => Exec["postmap__etc_postfix_header_checks_internal"]
-        }
-
-        file { "/etc/postfix/header_checks.submission":
-            source => [
-                    "puppet://$server/private/$environment/postfix/header_checks.submission",
-                    "puppet://$server/modules/kolab/postfix/header_checks.submission"
-                ],
-            notify => Exec["postmap__etc_postfix_header_checks_submission"]
         }
 
         package { "wallace":
