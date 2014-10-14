@@ -110,6 +110,26 @@ class kolab::mx inherits kolab::common {
             notify => Service["clamd.amavisd"]
         }
 
+        munin::plugin { [
+                "amavis",
+                "amavisd-agent",
+                "amavisd-agent-timeelapsed"
+            ]:
+            enable => true,
+            conf => [
+                    "puppet://$server/private/$environment/munin/plugin-conf.d/amavis.$hostname",
+                    "puppet://$server/private/$environment/munin/plugin-conf.d/amavis",
+                    "puppet://$server/files/munin/plugin-conf.d/amavis.$hostname",
+                    "puppet://$server/files/munin/plugin-conf.d/amavis",
+                    "puppet://$server/munin/plugin-conf.d/amavis"
+                ],
+            conf_name => "amavis",
+            source => true,
+            require => [
+                    Package["munin-node"]
+                ]
+        }
+
         package { [
                 "amavisd-new",
                 "clamd"
