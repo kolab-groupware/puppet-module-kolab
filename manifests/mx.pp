@@ -50,7 +50,11 @@ class kolab::mx inherits kolab::common {
     }
 
     class internal inherits kolab::mx::ldap {
-        realize(File["/etc/postfix/transport"])
+        realize(
+                File["/etc/postfix/transport"],
+                Package["kolab-saslauthd"],
+                Service["kolab-saslauthd"]
+            )
 
         realize(Nagios::Plugin['check_saslauthd'])
 
