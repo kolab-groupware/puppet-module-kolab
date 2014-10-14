@@ -30,6 +30,72 @@ class kolab::mx inherits kolab::common {
     }
 
     class amavisd inherits kolab::common {
+        file { "/etc/amavisd/amavisd.conf":
+            owner => "root",
+            group => "root",
+            mode => "644",
+            content => template("kolab/amavisd/amavisd.conf.erb"),
+            require => Package["amavisd-new"],
+            notify => Service["amavisd"]
+        }
+
+        file { "/etc/clamd.d/amavisd.conf":
+            owner => "root",
+            group => "root",
+            mode => "644",
+            source => [
+                    "puppet://$server/private/$environment/kolab/amavisd/clamd.conf.$hostname",
+                    "puppet://$server/private/$environment/kolab/amavisd/clamd.conf",
+                    "puppet://$server/files/kolab/amavisd/clamd.conf.$hostname",
+                    "puppet://$server/files/kolab/amavisd/clamd.conf",
+                    "puppet://$server/kolab/amavisd/clamd.conf.$hostname",
+                    "puppet://$server/kolab/amavisd/clamd.conf"
+                ],
+            require => Package["clamd"],
+            notify => Service["clamd.amavisd"]
+        }
+
+        file { "/etc/sysconfig/clamd":
+            owner => "root",
+            group => "root",
+            mode => "644",
+            source => [
+                    "puppet://$server/private/$environment/kolab/amavisd/clamd.sysconfig.$hostname",
+                    "puppet://$server/private/$environment/kolab/amavisd/clamd.sysconfig",
+                    "puppet://$server/files/kolab/amavisd/clamd.sysconfig.$hostname",
+                    "puppet://$server/files/kolab/amavisd/clamd.sysconfig",
+                    "puppet://$server/kolab/amavisd/clamd.sysconfig.$hostname",
+                    "puppet://$server/kolab/amavisd/clamd.sysconfig"
+                ],
+            require => Package["clamd"],
+            notify => Service["clamd.amavisd"]
+        }
+
+        package { [
+                "amavisd-new",
+                "clamd"
+            ]:
+            ensure => installed
+        }
+
+        service { "amavisd":
+            ensure => running,
+            enable => true,
+            require => [
+                    File["/etc/amavisd/amavisd.conf"],
+                    Package["amavisd-new"]
+                ]
+        }
+
+        service { "clamd.amavisd":
+            ensure => running,
+            enable => true,
+            require => [
+                    File["/etc/clamd.d/amavisd.conf"],
+                    File["/etc/sysconfig/clamd"],
+                    Package["clamd"]
+                ]
+        }
     }
 
     class backend inherits kolab::mx::ldap {
