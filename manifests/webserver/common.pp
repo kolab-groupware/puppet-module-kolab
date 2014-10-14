@@ -189,6 +189,13 @@ class kolab::webserver::common inherits kolab::common {
             ]
     }
 
+    @package { "roundcubemail-plugin-redundant_attachments":
+        ensure => getvar("kolab::pkg::roundcubemail_plugin_redundant_attachments_version"),
+        require => [
+                Package["roundcubemail"]
+            ]
+    }
+
     @package { "roundcubemail-plugins-kolab":
         ensure => getvar("kolab::pkg::roundcubemail_plugins_kolab_version"),
         require => [
