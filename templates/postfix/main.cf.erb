@@ -186,16 +186,17 @@ transport_maps = ldap:/etc/postfix/ldap/<%= primary_domain -%>/transport_maps.cf
     hash:/etc/postfix/transport
 <% end %>
 
-<% if backends.include?(@fqdn) then -%>
-local_transport = relay:[smtp.<%= @domain -%>]:25
-relayhost = [smtp.<%= @domain -%>]
-<% elsif intmxs.include?(@fqdn) then -%>
-relayhost = [smtp.<%= @domain -%>]
 <% if amavisd then -%>
 content_filter = smtp-amavis:[127.0.0.1]:10024
 <% elsif wallace then -%>
 content_filter = smtp-wallace:[127.0.0.1]:10026
 <% end -%>
+
+<% if backends.include?(@fqdn) then -%>
+local_transport = relay:[smtp.<%= @domain -%>]:25
+relayhost = [smtp.<%= @domain -%>]
+<% elsif intmxs.include?(@fqdn) then -%>
+relayhost = [smtp.<%= @domain -%>]
 smtpd_sender_login_maps = $relay_recipient_maps
 
 submission_sender_restrictions =
