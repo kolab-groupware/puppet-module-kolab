@@ -1,7 +1,8 @@
 class kolab::mx inherits kolab::common {
     class common inherits kolab::mx {
         class { 'postfix::template':
-            template => "kolab/postfix/main.cf.erb"
+            main_cf => "kolab/postfix/main.cf.erb",
+            master_cf => "kolab/postfix/master.cf.erb"
         }
 
         exec { "openssl_gendh__etc_postfix_dh1024_pem":

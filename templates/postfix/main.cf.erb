@@ -8,37 +8,79 @@
     hosteddomains = hosteddomains - [ primary_domain ]
 
     backends = scope.function_nodes_with_class_in_environment([@environment, 'kolab::imap::backend']).uniq
+    intmxs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::internal']).sort.uniq
+    extmxs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external']).sort.uniq
+    extmx_ins = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::inbound']).sort.uniq
+    extmx_outs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::outbound']).sort.uniq
+    extmx_subms = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::submission']).sort.uniq
+
     if not backends.include?(@fqdn) then
         if classes.include?('kolab::imap::backend') then
             backends << @fqdn
         end
     end
 
-    intmxs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::internal']).uniq
     if not intmxs.include?(@fqdn) then
         if classes.include?('kolab::mx::internal') then
             intmxs << @fqdn
         end
     end
 
-    extmxs = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external']).uniq
     if not extmxs.include?(@fqdn) then
         if classes.include?('kolab::mx::external') then
             extmxs << @fqdn
         end
     end
 
-    extmxs_out = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::outbound']).uniq
-    if not extmxs_out.include?(@fqdn) then
-        if classes.include?('kolab::mx::external::outbound') then
-            extmxs_out << @fqdn
+    if not extmx_ins.include?(@fqdn) then
+        if classes.include?('kolab::mx::external::inbound') then
+            extmx_ins << @fqdn
         end
     end
 
-    extmxs_in = scope.function_nodes_with_class_in_environment([@environment, 'kolab::mx::external::inbound']).uniq
-    if not extmxs_in.include?(@fqdn) then
-        if classes.include?('kolab::mx::external::inbound') then
-            extmxs_in << @fqdn
+    if not extmx_outs.include?(@fqdn) then
+        if classes.include?('kolab::mx::external::outbound') then
+            extmx_outs << @fqdn
+        end
+    end
+
+    if not extmx_subms.include?(@fqdn) then
+        if classes.include?('kolab::mx::external::submission') then
+            extmx_subms << @fqdn
+        end
+    end
+
+    if intmxs.include?(@fqdn) then
+        # Internal mail exchangers tend to be submission servers
+        submission = true
+    else
+        if extmx_subms.include?(@fqdn) then
+            # We have been made a submission server explicitly
+            submission = true
+        elsif extmx_subms.length > 0 then
+            # We are not a submission server
+            submission = false
+        elsif extmx_ins.include?(@fqdn) then
+            # We have no subms but we do have inbounds
+            submission = true
+        else
+            submission = false
+        end
+    end
+
+    if extmxs.length < 1 and intmxs.length > 0 then
+        amavisd = true
+        wallace = true
+    elsif extmxs.length > 0 then
+        if extmx_outs.include?(@fqdn) then
+            amavisd = true
+            wallace = false
+        elsif extmx_ins.include?(@fqdn) then
+            amavisd = true
+            wallace = false
+        else
+            amavisd = false
+            wallace = true
         end
     end
 -%>
@@ -49,7 +91,7 @@ daemon_directory = /usr/libexec/postfix
 mail_owner = postfix
 default_privs = nobody
 inet_interfaces = all
-<% if intmxs.include?(@fqdn) or extmxs_out.include?(@fqdn) then -%>
+<% if intmxs.include?(@fqdn) or extmx_outs.include?(@fqdn) then -%>
 mynetworks =
     127.0.0.0/8
     10.8.0.0/16
@@ -149,7 +191,11 @@ local_transport = relay:[smtp.<%= @domain -%>]:25
 relayhost = [smtp.<%= @domain -%>]
 <% elsif intmxs.include?(@fqdn) then -%>
 relayhost = [smtp.<%= @domain -%>]
+<% if amavisd then -%>
 content_filter = smtp-amavis:[127.0.0.1]:10024
+<% elsif wallace then -%>
+content_filter = smtp-wallace:[127.0.0.1]:10026
+<% end -%>
 smtpd_sender_login_maps = $relay_recipient_maps
 
 submission_sender_restrictions =
@@ -183,7 +229,7 @@ smtpd_sasl_auth_enable = yes
 smtpd_sender_restrictions =
     permit_mynetworks,
     check_policy_service unix:private/sender_policy_incoming
-<% elsif extmxs_out.include?(@fqdn) then -%>
+<% elsif extmx_outs.include?(@fqdn) then -%>
 <% else %>
 relayhost = [smtp.<%= @domain -%>]
 <% end %>
