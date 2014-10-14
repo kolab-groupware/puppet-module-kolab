@@ -53,6 +53,7 @@ class kolab::mx inherits kolab::common {
         realize(
                 File["/etc/postfix/transport"],
                 Package["kolab-saslauthd"],
+                Package["postfix-kolab"],
                 Service["kolab-saslauthd"]
             )
 

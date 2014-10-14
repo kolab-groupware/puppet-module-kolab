@@ -16,6 +16,10 @@ class kolab::common inherits kolab::params {
         ensure => getvar("kolab::pkg::kolab_saslauthd_version")
     }
 
+    @package { "postfix-kolab":
+        ensure => getvar("kolab::pkg::postfix_kolab_version")
+    }
+
     $primary_domain = getvar("kolab::params::kolab_primary_domain")
 
     if (!defined(File["/etc/pki/tls/certs/${primary_domain}.ca.cert"])) {
