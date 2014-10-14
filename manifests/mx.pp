@@ -48,8 +48,8 @@ class kolab::mx inherits kolab::common {
                     "puppet://$server/private/$environment/kolab/amavisd/clamd.conf",
                     "puppet://$server/files/kolab/amavisd/clamd.conf.$hostname",
                     "puppet://$server/files/kolab/amavisd/clamd.conf",
-                    "puppet://$server/kolab/amavisd/clamd.conf.$hostname",
-                    "puppet://$server/kolab/amavisd/clamd.conf"
+                    "puppet://$server/modules/kolab/amavisd/clamd.conf.$hostname",
+                    "puppet://$server/modules/kolab/amavisd/clamd.conf"
                 ],
             require => Package["clamd"],
             notify => Service["clamd.amavisd"]
@@ -64,8 +64,8 @@ class kolab::mx inherits kolab::common {
                     "puppet://$server/private/$environment/kolab/amavisd/clamd.sysconfig",
                     "puppet://$server/files/kolab/amavisd/clamd.sysconfig.$hostname",
                     "puppet://$server/files/kolab/amavisd/clamd.sysconfig",
-                    "puppet://$server/kolab/amavisd/clamd.sysconfig.$hostname",
-                    "puppet://$server/kolab/amavisd/clamd.sysconfig"
+                    "puppet://$server/modules/kolab/amavisd/clamd.sysconfig.$hostname",
+                    "puppet://$server/modules/kolab/amavisd/clamd.sysconfig"
                 ],
             require => Package["clamd"],
             notify => Service["clamd.amavisd"]
