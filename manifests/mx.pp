@@ -15,6 +15,21 @@ class kolab::mx inherits kolab::common {
             creates => "/etc/postfix/dh_512.pem"
         }
 
+        exec { "postmap__etc_postfix_header_checks_inbound":
+            command => "postmap /etc/postfix/header_checks.inbound",
+            refreshonly => true
+        }
+
+        exec { "postmap__etc_postfix_header_checks_internal":
+            command => "postmap /etc/postfix/header_checks.internal",
+            refreshonly => true
+        }
+
+        exec { "postmap__etc_postfix_header_checks_submission":
+            command => "postmap /etc/postfix/header_checks.submission",
+            refreshonly => true
+        }
+
         exec { "postmap__etc_postfix_transport":
             command => "postmap /etc/postfix/transport",
             refreshonly => true
@@ -149,21 +164,6 @@ class kolab::mx inherits kolab::common {
             )
 
         realize(Nagios::Plugin['check_saslauthd'])
-
-        exec { "postmap__etc_postfix_header_checks_inbound":
-            command => "postmap /etc/postfix/header_checks.inbound",
-            refreshonly => true
-        }
-
-        exec { "postmap__etc_postfix_header_checks_internal":
-            command => "postmap /etc/postfix/header_checks.internal",
-            refreshonly => true
-        }
-
-        exec { "postmap__etc_postfix_header_checks_submission":
-            command => "postmap /etc/postfix/header_checks.submission",
-            refreshonly => true
-        }
 
         package { "wallace":
             ensure => getvar("kolab::pkg::wallace_version")
