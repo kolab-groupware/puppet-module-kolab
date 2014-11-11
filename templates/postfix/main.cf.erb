@@ -78,6 +78,9 @@
         elsif extmx_ins.include?(@fqdn) then
             amavisd = true
             wallace = false
+        elsif backends.include?(@fqdn) then
+            amavisd = false
+            wallace = false
         else
             amavisd = false
             wallace = true
