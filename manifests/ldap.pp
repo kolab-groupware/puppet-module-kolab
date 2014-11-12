@@ -112,7 +112,7 @@ class kolab::ldap inherits kolab::common {
         ensure => getvar("kolab::pkg::kolab_ldap_version")
     }
 
-    service { "disrv":
+    service { "dirsrv":
         ensure => running,
         enable => true,
         require => [
