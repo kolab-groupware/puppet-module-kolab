@@ -9,7 +9,9 @@ class kolab::ldap inherits kolab::common {
     file { "/etc/security/limits.d/50-389ds.conf":
         source => [
                 "puppet://$server/private/$environment/files/389ds/389-ds.limits.$hostname",
-                "puppet://$server/private/$environment/files/389ds/389-ds.limits"
+                "puppet://$server/private/$environment/files/389ds/389-ds.limits",
+                "puppet://$server/files/389ds/389-ds.limits",
+                "puppet://$server/modules/kolab/389ds/389-ds.limits"
             ],
         ensure => "file",
         owner  => "root",
@@ -29,7 +31,10 @@ class kolab::ldap inherits kolab::common {
     file { "/etc/sysctl.d/389-ds":
         source => [
                 "puppet://$server/private/$environment/files/389ds/389-ds.sysctl.$hostname",
-                "puppet://$server/private/$environment/files/389ds/389-ds.sysctl"
+                "puppet://$server/private/$environment/files/389ds/389-ds.sysctl",
+                "puppet://$server/files/389ds/389-ds.sysctl.$hostname",
+                "puppet://$server/files/389ds/389-ds.sysctl",
+                "puppet://$server/modules/kolab/389ds/389-ds.sysctl"
             ],
         ensure => "file",
         owner  => "root",
@@ -40,7 +45,10 @@ class kolab::ldap inherits kolab::common {
     file { "/etc/sysconfig/dirsrv":
         source => [
                 "puppet://$server/private/$environment/files/389ds/389-ds.sysconfig.$hostname",
-                "puppet://$server/private/$environment/files/389ds/389-ds.sysconfig"
+                "puppet://$server/private/$environment/files/389ds/389-ds.sysconfig",
+                "puppet://$server/files/389ds/389-ds.sysconfig.$hostname",
+                "puppet://$server/files/389ds/389-ds.sysconfig",
+                "puppet://$server/modules/kolab/389ds/389-ds.sysconfig"
             ],
         ensure => "file",
         owner  => "root",
@@ -53,7 +61,10 @@ class kolab::ldap inherits kolab::common {
     file { "/etc/dirsrv/DB_CONFIG":
         source => [
                 "puppet://$server/private/$environment/files/389ds/389-ds.DB_CONFIG.$hostname",
-                "puppet://$server/private/$environment/files/389ds/389-ds.DB_CONFIG"
+                "puppet://$server/private/$environment/files/389ds/389-ds.DB_CONFIG",
+                "puppet://$server/files/389ds/389-ds.DB_CONFIG.$hostname",
+                "puppet://$server/files/389ds/389-ds.DB_CONFIG",
+                "puppet://$server/modules/kolab/389ds/389-ds.DB_CONFIG"
             ],
         ensure => "file",
         owner  => "nobody",
@@ -70,7 +81,11 @@ class kolab::ldap inherits kolab::common {
         plugin_name => "bdbstat_",
         conf => [
                 "puppet://$server/private/$environment/munin/plugin-conf.d/bdbstat.$hostname",
-                "puppet://$server/private/$environment/munin/plugin-conf.d/bdbstat"
+                "puppet://$server/private/$environment/munin/plugin-conf.d/bdbstat",
+                "puppet://$server/files/munin/plugin-conf.d/bdbstat.$hostname",
+                "puppet://$server/files/munin/plugin-conf.d/bdbstat",
+                "puppet://$server/modules/munin/plugin-conf.d/bdbstat",
+                "puppet://$server/modules/kolab/munin/plugin-conf.d/bdbstat"
             ],
         conf_name => "bdbstat"
     }
@@ -84,13 +99,26 @@ class kolab::ldap inherits kolab::common {
         plugin_name => "389ds_",
         conf => [
                 "puppet://$server/private/$environment/munin/plugin-conf.d/389ds.$hostname",
-                "puppet://$server/private/$environment/munin/plugin-conf.d/389ds"
+                "puppet://$server/private/$environment/munin/plugin-conf.d/389ds",
+                "puppet://$server/files/munin/plugin-conf.d/389ds.$hostname",
+                "puppet://$server/files/munin/plugin-conf.d/389ds",
+                "puppet://$server/modules/munin/plugin-conf.d/389ds",
+                "puppet://$server/modules/kolab/munin/plugin-conf.d/389ds"
             ],
         conf_name => "389ds"
     }
 
-
     package { "kolab-ldap":
         ensure => getvar("kolab::pkg::kolab_ldap_version")
+    }
+
+    service { "disrv":
+        ensure => running,
+        enable => true,
+        require => [
+                File["/etc/sysconfig/dirsrv"],
+                File["/etc/sysctl.d/389-ds"],
+                Package["kolab-ldap"],
+            ],
     }
 }
