@@ -97,7 +97,7 @@ SERVICES {
     ## Frontend
     ##
 
-    mupdate     cmd="mupdate<%= debug_flag -%>"       listen=3905                         prefork=1
+    mupdate     cmd="mupdate<%= debug_flag -%>"       listen=3905                         prefork=1 babysit=1
 
     imap        cmd="proxyd<%= debug_flag -%>"        listen="imap"                       prefork=1 maxchild=4096
     imaps       cmd="proxyd<%= debug_flag -%> -s"     listen="imaps"                      prefork=1 maxchild=4096
@@ -122,7 +122,7 @@ SERVICES {
     ## MUPDATE Master
     ##
 
-    mupdate     cmd="mupdate<%= debug_flag -%> -m"    listen=3905                         prefork=0
+    mupdate     cmd="mupdate<%= debug_flag -%> -m"    listen=3905                         prefork=1 babysit=1
 
 <% if defined?(enable_ptloader) && enable_ptloader -%>
     ptloader    cmd="ptloader<%= debug_flag -%>"      listen="<%= socket_path -%>/ptsock"  prefork=1
