@@ -1,0 +1,3 @@
+# change filedescriptors limits for 389 DS server.
+*               soft    nofile          65536
+*               hard    nofile          65536

@@ -1,0 +1,6 @@
+mutex_set_max 173840
+
+# Increase transaction limit to solve issues like
+# -- libdb: Unable to allocate memory for transaction detail --
+# during DS startup. Default value was 200.
+set_tx_max 600

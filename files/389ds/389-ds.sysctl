@@ -1,0 +1,11 @@
+# Kernel semaphores
+kernel.sem = 5010 641280 5010 4096
+
+# Increase number of local system ports available by running this command
+net.ipv4.ip_local_port_range = 1024 65000
+
+# Start closing open sockets after 5 mins
+net.ipv4.tcp_keepalive_time = 300
+
+# Increase the file descriptors
+fs.file-max = 64000
