@@ -216,7 +216,7 @@ class kolab::mx inherits kolab::common {
         file { "/etc/postfix/ldap/mydestination.cf":
             owner => "root",
             group => "root",
-            mode => 640,
+            mode => "640",
             content => template("kolab/postfix/ldap/mydestination.cf.erb")
         }
 

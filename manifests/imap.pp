@@ -45,7 +45,7 @@ class kolab::imap inherits kolab::common {
         ensure => "file",
         owner  => "root",
         group  => "root",
-        mode   => 644
+        mode   => "644"
     }
 
     @file { "/etc/sysconfig/cyrus-imapd":

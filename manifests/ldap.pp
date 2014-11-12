@@ -16,7 +16,7 @@ class kolab::ldap inherits kolab::common {
         ensure => "file",
         owner  => "root",
         group  => "root",
-        mode   => 644
+        mode   => "644"
     }
 
     # Not all RH installations have this directory by default
@@ -24,7 +24,7 @@ class kolab::ldap inherits kolab::common {
         ensure => "directory",
         owner  => "root",
         group  => "root",
-        mode   => 755
+        mode   => "755"
     }
 
     # Supply sysctl file for 389-DS, to tune up performance
@@ -39,7 +39,7 @@ class kolab::ldap inherits kolab::common {
         ensure => "file",
         owner  => "root",
         group  => "root",
-        mode   => 644
+        mode   => "644"
     }
 
     file { "/etc/sysconfig/dirsrv":
@@ -53,7 +53,7 @@ class kolab::ldap inherits kolab::common {
         ensure => "file",
         owner  => "root",
         group  => "root",
-        mode   => 644
+        mode   => "644"
     }
 
     # Specify mutex for 389 DS. THis will fail, since we don't yet know how to get instance name,
@@ -69,7 +69,7 @@ class kolab::ldap inherits kolab::common {
         ensure => "file",
         owner  => "nobody",
         group  => "nobody",
-        mode   => 644
+        mode   => "644"
     }
 
     munin::plugin { [
