@@ -122,9 +122,9 @@ ldap_timeout: 10
 ldap_time_limit: 10
 <% end -%>
 
-tls_cert_file: /etc/pki/tls/private/<%= domain %>.pem
-tls_key_file: /etc/pki/tls/private/<%= domain %>.pem
-tls_ca_file: /etc/pki/tls/certs/<%= domain %>.ca.cert
+tls_server_cert: /etc/pki/tls/private/<%= domain %>.pem
+tls_server_key: /etc/pki/tls/private/<%= domain %>.pem
+
 tls_cipher_list: EECDH+AES:EDH+AES:-SHA1:EECDH+RC4:EDH+RC4:RC4-SHA:EECDH+AES256:EDH+AES256:AES256-SHA:!aNULL:!eNULL:!EXP:!LOW:!MD5
 
 <% if role == "frontend" then -%>
@@ -156,7 +156,6 @@ username_tolower: 1
 deletedprefix: DELETED
 delete_mode: delayed
 expunge_mode: delayed
-flushseenstate: 1
 postuser: shared
 
 syslog_prefix: cyrus-imapd
