@@ -15,6 +15,7 @@ class kolab::webserver::roundcubemail inherits kolab::webserver::common {
             File["/etc/roundcubemail/config.inc.php"],
             File["/etc/roundcubemail/kolab_auth.inc.php"],
             File["/etc/roundcubemail/kolab_delegation.inc.php"],
+            File["/etc/roundcubemail/kolab_folders.inc.php"],
             File["/etc/roundcubemail/libkolab.inc.php"],
             File["/etc/roundcubemail/password.inc.php"],
             Package["php-pecl-apc"],

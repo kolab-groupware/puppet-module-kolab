@@ -259,10 +259,10 @@
 
     $config['performance_stats'] = true;
 
-    $config['drafts_mbox'] = 'Entwürfe';
+    $config['drafts_mbox'] = 'Drafts';
     $config['junk_mbox'] = 'Spam';
-    $config['sent_mbox'] = 'Gesendet';
-    $config['trash_mbox'] = 'Gelöscht';
+    $config['sent_mbox'] = 'Sent';
+    $config['trash_mbox'] = 'Trash';
 
     $config['skin'] = 'larry';
     $config['support_url'] = 'https://<%= domain -%>/support';
@@ -275,7 +275,7 @@
 
     $config['archive_mbox'] = 'Archiv';
     $config['junk_mbox'] = 'Spam';
-    $config['default_folders'] = array('INBOX', 'Entwürfe', 'Gesendet', 'Spam', 'Gelöscht', 'Archiv');
+    $config['default_folders'] = array('INBOX', 'Drafts', 'Sent', 'Spam', 'Trash');
 
     $config['ssl_verify_host'] = false;
     $config['ssl_verify_peer'] = false;
@@ -295,7 +295,7 @@
 
     $config['ldap_public'] = Array(
             'Kolab' => Array(
-                    'name'                          => 'Globales Adressbuch',
+                    'name'                          => 'Global Address Book',
                     'hosts'                         => array('<%= scope.lookupvar("kolab::params::ldap_hostname") -%>'),
                     'port'                          => 389,
                     'use_tls'                       => false,

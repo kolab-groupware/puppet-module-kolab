@@ -75,6 +75,13 @@ class kolab::webserver::common inherits kolab::common {
         content => template("kolab/roundcubemail/kolab_delegation.inc.php.erb")
     }
 
+    @file { "/etc/roundcubemail/kolab_folders.inc.php":
+        mode => "640",
+        owner => "root",
+        group => "apache",
+        content => template("kolab/roundcubemail/kolab_folders.inc.php.erb")
+    }
+
     @file { "/etc/roundcubemail/kolab.inc.php":
         ensure => link,
         links => manage,
