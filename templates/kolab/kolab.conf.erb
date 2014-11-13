@@ -25,9 +25,18 @@ secondary_mail = {
 default_quota = 1048576
 
 autocreate_folders = {
+        'Archive': {
+                'quota': 0,
+                'partition': 'archive',
+            },
         'Calendar': {
                 'annotations': {
                         '/private/vendor/kolab/folder-type': "event.default",
+                        '/shared/vendor/kolab/folder-type': "event",
+                    },
+            },
+        'Calendar/Personal Calendar': {
+                'annotations': {
                         '/shared/vendor/kolab/folder-type': "event",
                     },
             },
@@ -40,6 +49,11 @@ autocreate_folders = {
         'Contacts': {
                 'annotations': {
                         '/private/vendor/kolab/folder-type': "contact.default",
+                        '/shared/vendor/kolab/folder-type': "contact",
+                    },
+            },
+        'Contacts/Personal Contacts': {
+                'annotations': {
                         '/shared/vendor/kolab/folder-type': "contact",
                     },
             },
