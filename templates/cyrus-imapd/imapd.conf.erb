@@ -122,8 +122,9 @@ ldap_timeout: 10
 ldap_time_limit: 10
 <% end -%>
 
-tls_server_cert: /etc/pki/tls/private/<%= domain %>.pem
-tls_server_key: /etc/pki/tls/private/<%= domain %>.pem
+tls_server_cert: /etc/pki/tls/private/<%= domain -%>.pem
+tls_server_key: /etc/pki/tls/private/<%= domain -%>.pem
+tls_server_ca_file: /etc/pki/tls/certs/<%= domain -%>.ca.cert
 
 tls_ciphers: EECDH+AES:EDH+AES:-SHA1:EECDH+RC4:EDH+RC4:RC4-SHA:EECDH+AES256:EDH+AES256:AES256-SHA:!aNULL:!eNULL:!EXP:!LOW:!MD5
 
