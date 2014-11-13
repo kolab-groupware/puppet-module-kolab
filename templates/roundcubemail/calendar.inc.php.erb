@@ -10,6 +10,8 @@
 
     $config['calendar_caldav_url'] = "https://caldav.<%= domain -%>/calendars/%u/%i";
 
+    $config['calendar_contact_birthdays'] = true;
+
     $config['kolab_invitation_calendars'] = true;
 
     $config['calendar_resources_driver'] = 'ldap';
@@ -17,7 +19,7 @@
     $config['calendar_resources_directory'] = array(
             'name'                  => 'Global Address Book',
             'hosts'                 => array('<%= scope.lookupvar("kolab::params::ldap_hostname") -%>'),
-            'port'                  => 389,
+            'port'                  => <%= scope.lookupvar("kolab::params::ldap_port") -%>,
             'use_tls'               => false,
             'base_dn'               => '%dc',
             'user_specific'         => true,
@@ -71,5 +73,4 @@
     if (file_exists(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
         include_once(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__));
     }
-
 ?>
