@@ -95,6 +95,13 @@ class kolab::webserver::common inherits kolab::common {
         content => template("kolab/roundcubemail/libkolab.inc.php.erb")
     }
 
+    @file { "/etc/roundcubemail/managesieve.inc.php":
+        mode => "640",
+        owner => "root",
+        group => "apache",
+        content => template("kolab/roundcubemail/managesieve.inc.php.erb")
+    }
+
     @file { "/etc/roundcubemail/password.inc.php":
         mode => "640",
         owner => "root",
