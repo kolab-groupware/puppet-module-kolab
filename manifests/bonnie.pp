@@ -1,24 +1,16 @@
 class kolab::bonnie {
     file { "/etc/bonnie/bonnie.conf":
         source => "puppet://$server/private/$environment/files/bonnie/bonnie.conf",
-        owner => "cyrus",
-        group => "mail",
+        owner => "bonnie",
+        group => "bonnie",
         mode => "640",
-        require => User["cyrus"]
+        require => Package["bonnie"]
     }
 
-    if (!defined(User["cyrus"])) {
-        @user { "cyrus":
-            ensure => present,
-            uid => 76,
-            gid => 12,
-            comment => "Cyrus IMAP Server",
-            shell => "/sbin/nologin",
-            home => "/var/lib/imap"
-        }
+    package { "bonnie":
+        ensure => getvar("kolab::pkg::bonnie_version"),
+        require => Yum::Repository["kolab-14-extras-audit"]
     }
-
-    realize(User["cyrus"])
 
     yum::repository { "kolab-14-extras-audit":
         enable => true
