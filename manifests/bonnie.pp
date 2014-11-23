@@ -1,6 +1,12 @@
 class kolab::bonnie {
     file { "/etc/bonnie/bonnie.conf":
-        source => "puppet://$server/private/$environment/files/bonnie/bonnie.conf",
+        source => [
+                "puppet://$server/private/$environment/files/bonnie/bonnie.conf.$hostname",
+                "puppet://$server/private/$environment/files/bonnie/bonnie.conf",
+                "puppet://$server/files/bonnie/bonnie.conf.$hostname",
+                "puppet://$server/files/bonnie/bonnie.conf",
+                "puppet://$server/modules/bonnie/bonnie.conf"
+            ],
         owner => "bonnie",
         group => "bonnie",
         mode => "640",
