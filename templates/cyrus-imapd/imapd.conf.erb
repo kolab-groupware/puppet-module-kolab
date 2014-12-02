@@ -167,11 +167,19 @@ chatty: <%= scope.lookupvar("kolab::params::imap_chatty") %>
 #iolog: 1
 auditlog: <%= scope.lookupvar("kolab::params::imap_auditlog") %>
 <% end -%>
-<% if enable_notify then -%>
+<% if enable_notify && (role == "backend" || role == "frontend" || role == "full") then -%>
 event_content_inclusion_mode: standard
 event_content_size: 0
 event_extra_params: bodyStructure clientAddress diskUsed flagNames messageSize messages modseq service timestamp uidnext vnd.cmu.midset vnd.cmu.unseenMessages vnd.cmu.envelope vnd.cmu.sessionId
-event_groups: message quota flags access mailbox
+
+<% if role == "frontend" then -%>
+event_groups: access
+<% elsif role == "backend" then -%>
+event_groups: message quota flags mailbox
+<% elsif role == "full" then -%>
+event_groups: access flags mailbox message quota
+<% end -%>
+
 <% if classes.include?('kolab::imap::bonnie') then -%>
 event_notifier: external
 sievenotifier: external
