@@ -1,5 +1,9 @@
 <?php
 
+    /*
+        Managed by Puppet
+     */
+
     $config['kolab_freebusy_server'] = '<%= scope.lookupvar("kolab::params::kolab_freebusy_server") -%>';
 
     if (file_exists(RCUBE_CONFIG_DIR . '/' . $_SERVER["HTTP_HOST"] . '/' . basename(__FILE__))) {
@@ -17,4 +21,17 @@
 
     $config['kolab_messages_cache_bypass'] = 2;
 
+<%
+    bonnie_api_uri = scope.lookupvar("kolab::params::bonnie_api_uri")
+
+    if bonnie_api_uri.kind_of?(String) and bonnie_api_uri != "" and bonnie_api_uri != "undefined" then
+-%>
+    $config['kolab_bonnie_api'] = array(
+        'uri'    => '<%= scope.lookupvar("kolab::params::bonnie_api_uri") -%>',
+        'user'   => '<%= scope.lookupvar("kolab::params::bonnie_api_webclient_username") -%>',
+        'pass'   => '<%= scope.lookupvar("kolab::params::bonnie_api_webclient_password") -%>',
+        'secret' => '<%= scope.lookupvar("kolab::params::bonnie_api_webclient_secret") -%>',
+        'debug'  => true
+    );
+<%  end -%>
 ?>

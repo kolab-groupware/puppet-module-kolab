@@ -44,6 +44,11 @@ class kolab::params (
             $ldap_port = "389",
             $ldap_domain_base_dn = "cn=kolab,cn=config",
 
+            $bonnie_api_uri = undef,
+            $bonnie_api_webclient_username = 'webclient',
+            $bonnie_api_webclient_password = 'Welcome2KolabSystems',
+            $bonnie_api_webclient_secret = 'some-md5sum-or-something-le-128-chars',
+
             $roundcubemail_db_dsnw = "mysqli://roundcube:password@localhost/roundcube",
             $roundcubemail_db_dsnr = undef,
 
@@ -59,7 +64,9 @@ class kolab::params (
 
             $kolab_cache_sql_uri = "mysql://kolab:Welcome2KolabSystems@localhost/kolab",
             $kolab_webadmin_sql_uri = "mysql://kolab:Welcome2KolabSystems@localhost/kolab",
+
             $roundcubemail_des_key = 'rcmail-!24ByteDESkey*Str',
+
             $smtp_hostname = "$fqdn",
             $smtp_port = "587"
         ) {
