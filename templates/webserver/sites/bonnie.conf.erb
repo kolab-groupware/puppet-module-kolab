@@ -51,12 +51,12 @@ WSGIPythonOptimize 1
     SSLCertificateKeyFile /etc/pki/tls/private/bonnie.<%= vhost_domain -%>.key
     SSLCACertificateFile /etc/pki/tls/certs/bonnie.<%= vhost_domain -%>.ca.cert
 
-    WSGIDaemonProcess bonnie user=apache maximum-requests=1000 display-name=bonnie processes=2 threads=1
+    WSGIDaemonProcess bonnie user=bonnie maximum-requests=1000 display-name=bonnie processes=2 threads=5
 
     WSGIScriptAlias / /usr/share/bonnie-flask/bonnie-flask.wsgi
 
     <Location />
-        WSGIProcessGroup apache
+        WSGIProcessGroup bonnie
         <IfModule mod_authz_core.c>
             Require all granted
         </IfModule>
