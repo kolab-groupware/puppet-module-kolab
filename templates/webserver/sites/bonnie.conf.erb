@@ -52,7 +52,7 @@ WSGIPythonOptimize 1
     SSLCACertificateFile /etc/pki/tls/certs/bonnie.<%= vhost_domain -%>.ca.cert
 
     WSGIDaemonProcess bonnie user=bonnie maximum-requests=1000 display-name=bonnie processes=2 threads=5
-
+    WSGIPassAuthorization On
     WSGIScriptAlias / /usr/share/bonnie-flask/bonnie-flask.wsgi
 
     <Location />
