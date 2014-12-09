@@ -265,6 +265,13 @@
     $config['sent_mbox'] = 'Sent';
     $config['trash_mbox'] = 'Trash';
 
+<%
+    skin = scope.lookupvar('kolab::params::roundcubemail_skin')
+
+    if !@skin then
+        skin = "larry"
+    end
+-%>
     $config['skin'] = 'larry';
     $config['support_url'] = 'https://<%= domain -%>/support';
     $config['skin_include_php'] = false;
@@ -274,7 +281,7 @@
     $config['log_dir'] = 'logs/';
     $config['temp_dir'] = '/var/lib/roundcubemail/';
 
-    $config['archive_mbox'] = 'Archiv';
+    $config['archive_mbox'] = 'Archive';
     $config['junk_mbox'] = 'Spam';
     $config['default_folders'] = array('INBOX', 'Drafts', 'Sent', 'Spam', 'Trash');
 
