@@ -275,7 +275,7 @@
 <%
     skin = scope.lookupvar("kolab::params::roundcubemail_skin")
 
-    if !@skin then
+    if !skin.kind_of?(String) or skin == "" or skin == "undefined" then
         skin = "larry"
     end
 -%>
