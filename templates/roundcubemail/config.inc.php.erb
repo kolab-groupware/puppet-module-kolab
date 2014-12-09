@@ -133,7 +133,14 @@
 
     // Kolab specific defaults
     $config['product_name'] = 'Kolab Groupware';
-    $config['skin_logo'] = 'skins/kolab/images/kolab_logo.png';
+<%
+    skin_logo = scope.lookupvar('kolab::params::roundcubemail_skin_logo')
+
+    if @skin_logo then
+-%>
+    $config['skin_logo'] = '<%= skin_logo -%>';
+<%  end -%>
+
     $config['quota_zero_as_unlimited'] = false;
     $config['login_lc'] = 2;
     $config['auto_create_user'] = true;

@@ -67,6 +67,7 @@ class kolab::params (
 
             $roundcubemail_des_key = 'rcmail-!24ByteDESkey*Str',
             $roundcubemail_skin = "larry",
+            $roudncubemail_skin_logo = undef,
 
             $smtp_hostname = "$fqdn",
             $smtp_port = "587"
