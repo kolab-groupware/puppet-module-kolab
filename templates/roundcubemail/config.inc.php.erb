@@ -134,7 +134,7 @@
     // Kolab specific defaults
     $config['product_name'] = 'Kolab Groupware';
 <%
-    skin_logo = scope.lookupvar('kolab::params::roundcubemail_skin_logo')
+    skin_logo = scope.lookupvar("kolab::params::roundcubemail_skin_logo")
 
     if @skin_logo then
 -%>
@@ -273,7 +273,7 @@
     $config['trash_mbox'] = 'Trash';
 
 <%
-    skin = scope.lookupvar('kolab::params::roundcubemail_skin')
+    skin = scope.lookupvar("kolab::params::roundcubemail_skin")
 
     if !@skin then
         skin = "larry"
