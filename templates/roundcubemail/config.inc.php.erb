@@ -192,14 +192,22 @@
     $config['useragent'] = 'Kolab 3.1/Roundcube ' . RCUBE_VERSION;
 <%
     dont_override = scope.lookupvar('kolab::params::roundcubemail_dont_override')
-    if !@dont_override then
-        dont_override = [ 'skin' ]
-    elsif !dont_override.kind_of?(Array) and dont_override.kind_of?(String) then
+    if !dont_override.kind_of?(Array) and dont_override.kind_of?(String) then
+-%>
+    // dont_override not array but string
+<%
         dont_override = [ dont_override ]
+    elsif !dont_override then
+-%>
+    // dont_override not defined
+<%
+        dont_override = [ 'skin' ]
     end
 -%>
     $config['dont_override'] = Array(
+<% if dont_override.length > 0 then -%>
             '<%= dont_override.join("',\n        '") -%>'
+<% end -%>
         );
 
     $config['message_sort_col'] = 'date';
