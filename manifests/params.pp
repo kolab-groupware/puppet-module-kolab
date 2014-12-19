@@ -66,6 +66,7 @@ class kolab::params (
             $kolab_webadmin_sql_uri = "mysql://kolab:Welcome2KolabSystems@localhost/kolab",
 
             $roundcubemail_des_key = 'rcmail-!24ByteDESkey*Str',
+            $roundcubemail_dont_override = undef,
             $roundcubemail_skin = "larry",
             $roudncubemail_skin_logo = undef,
 
