@@ -261,8 +261,8 @@
     $config['smtp_log'] = true;
     $config['log_logins'] = true;
     $config['log_session'] = true;
+    $config['debug_level'] = 1;
 <% if environment == "production" then %>
-    $config['debug_level'] = 0;
     $config['devel_mode'] = false;
     $config['sql_debug'] = false;
     $config['memcache_debug'] = false;
@@ -272,7 +272,6 @@
     $config['activesync_debug'] = false;
     $config['activesync_user_log'] = false;
 <% else %>
-    $config['debug_level'] = 1;
     $config['devel_mode'] = true;
     $config['sql_debug'] = true;
     $config['memcache_debug'] = true;
