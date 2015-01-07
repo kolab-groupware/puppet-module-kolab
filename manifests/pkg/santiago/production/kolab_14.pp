@@ -45,7 +45,7 @@ class kolab::pkg::santiago::production::kolab_14 inherits kolab::pkg::santiago::
     $aspell_version = "0.60.6-12.el6"
     $bonnie_dealer_version = "latest"
     $cabextract_version = "1.3-3.el6"
-    $chwala_version = "0.2-19.1.el6.kolab_14"
+    $chwala_version = "0.2-19.4.el6.kolab_14"
     $clamav_db_version = "0.98-2.el6"
     $clamav_version = "0.98-2.el6"
     $clamd_version = "0.98-2.el6"
@@ -105,11 +105,10 @@ class kolab::pkg::santiago::production::kolab_14 inherits kolab::pkg::santiago::
     $python_pyasn1_modules_version = "0.1.2-1.el6.kolab_13"
     $python_pyasn1_version = "0.1.2-1.el6.kolab_13"
     $python_sqlalchemy_version = "0.5.5-3.el6_2"
-    $roundcubemail_plugin_contextmenu_version = "1.13-8.1.el6.kolab_14"
-    $roundcubemail_plugin_threading_as_default_version = "0.9-3.el6.kolab_13"
-    $roundcubemail_plugins_kolab_version = "3.2-24.2.el6.kolab_14"
+    $roundcubemail_plugin_contextmenu_version = "2.1-2.el6.kolab_14"
+    $roundcubemail_plugins_kolab_version = "3.2.2-2.el6.kolab_14"
     $roundcubemail_skin_kolab_version = "0.6-3.el6.kolab_14"
-    $roundcubemail_version = "1.1-25.2.el6.kolab_14"
+    $roundcubemail_version = "1.1-25.15.el6.kolab_14"
     $spamassassin_version = "3.3.1-3.el6"
 
     $apr_util_ldap_version = $apr_util_version
