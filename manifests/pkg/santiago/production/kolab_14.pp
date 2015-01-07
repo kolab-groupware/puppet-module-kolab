@@ -100,7 +100,7 @@ class kolab::pkg::santiago::production::kolab_14 inherits kolab::pkg::santiago::
         $puppet_version = "installed"
     }
 
-    $pykolab_version = "0.7.2-1.el6.kolab_14"
+    $pykolab_version = "0.7.5-1.el6.kolab_14"
     $python_ldap_version = "2.4.6-2.el6.kolab_13"
     $python_pyasn1_modules_version = "0.1.2-1.el6.kolab_13"
     $python_pyasn1_version = "0.1.2-1.el6.kolab_13"
