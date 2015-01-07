@@ -49,7 +49,7 @@ class kolab::pkg::santiago::production::kolab_14 inherits kolab::pkg::santiago::
     $clamav_db_version = "0.98-2.el6"
     $clamav_version = "0.98-2.el6"
     $clamd_version = "0.98-2.el6"
-    $cyrus_imapd_version = "2.5-56.2.el6.kolab_14"
+    $cyrus_imapd_version = "2.5-56.13.el6.kolab_14"
     $cyrus_sasl_gssapi_version = "2.1.23-13.el6_3.1"
     $cyrus_sasl_lib_version = "2.1.23-13.el6_3.1"
     $cyrus_sasl_md5_version = "2.1.23-13.el6_3.1"
