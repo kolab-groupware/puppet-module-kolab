@@ -55,7 +55,7 @@ class kolab::pkg::santiago::production::kolab_14 inherits kolab::pkg::santiago::
     $cyrus_sasl_md5_version = "2.1.23-13.el6_3.1"
     $cyrus_sasl_plain_version = "2.1.23-13.el6_3.1"
     $cyrus_sasl_version = "2.1.23-13.el6_3.1"
-    $httpd_version = "2.4.10-14.el6.kolab_14"
+    $httpd_version = "2.4.10-17.el6.kolab_14"
     $irony_version = "0.2.8-7.1.el6.kolab_14"
     $keepalived_version = "1.2.7-3.el6"
     $kolab_freebusy_version = "1.0.5-8.1.el6.kolab_14"
@@ -91,7 +91,7 @@ class kolab::pkg::santiago::production::kolab_14 inherits kolab::pkg::santiago::
     $php_pecl_memcache_version = "3.0.5-4.el6"
     $php_smarty_version = "3.1.13-12.1.el6.kolab_14"
     $php_zendframework_version = "1.12.7-1.el6"
-    $php_version = "5.3.27-7.el6.kolab_14"
+    $php_version = "5.3.29-3.el6.kolab_14"
     $postfix_version = "2.6.6-6.el6_5"
 
     if (!defined(Yum::Repository["kolab-14-extras-puppet"])) {
