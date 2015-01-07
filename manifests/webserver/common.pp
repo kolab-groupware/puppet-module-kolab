@@ -1,7 +1,7 @@
 class kolab::webserver::common inherits kolab::common {
     class { '::webserver':
-        httpd_version => getvar("kolab::params::httpd_version"),
-        php_version => getvar("kolab::params::php_version")
+        httpd_version => getvar("kolab::pkg::httpd_version"),
+        php_version => getvar("kolab::pkg::php_version")
     }
 
     @file { "/etc/php.d/apc.ini":
