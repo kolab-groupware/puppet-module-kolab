@@ -3,7 +3,7 @@
 
 <%
 
-    haproxy_resources = scope.function_query_resources('Class[Haproxy]')
+    haproxy_resources = scope.function_query_resources(['Class[Haproxy]'])
     haproxy_class = haproxy_resources['Class[Haproxy]']
     haproxy_params = haproxy_class['parameters']
 
