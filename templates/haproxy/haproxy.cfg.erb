@@ -4,11 +4,13 @@
 <%
 
     #vhosts = scope.function_titles_for_restype_in_environment([@environment, 'webserver::virtualhost']).sort.uniq
-    vhosts = scope.function_titles_for_restype_in_environment(['production', 'webserver::virtualhost']).sort.uniq
+    vhost_definitions = scope.function_titles_for_restype_in_environment(['production', 'webserver::virtualhost']).sort.uniq
 
-    vhosts.each do |vhost|
+    vhost_definitions.each do |vhost_definition|
+        vhost_parameters = vhost_definition['parameters']
+        vhost_name = vhost_parameters['name']
 -%>
-# vhost: <%= vhost %>
+# vhost: <%= vhost_name %>
 <%
     end
 -%>
