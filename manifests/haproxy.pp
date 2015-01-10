@@ -1,13 +1,8 @@
 class kolab::haproxy {
     file { "/etc/haproxy/haproxy.cfg":
-        source => "puppet://$server/private/$environment/kolab/haproxy/haproxy.cfg",
+        content => template('kolab/haproxy/haproxy.cfg.erb'),
         require => Package["haproxy"],
         notify => Service["haproxy"]
-    }
-
-    file { "/etc/haproxy/haproxy.cfg-from-tpl":
-        content => template('kolab/haproxy/haproxy.cfg.erb'),
-        require => Package["haproxy"]
     }
 
     package { "haproxy":

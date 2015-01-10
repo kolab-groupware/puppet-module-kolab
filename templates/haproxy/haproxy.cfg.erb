@@ -3,14 +3,118 @@
 
 <%
 
-    #vhosts = scope.function_titles_for_restype_in_environment([@environment, 'webserver::virtualhost']).sort.uniq
-    vhost_definitions = scope.function_titles_for_restype_in_environment(['production', 'webserver::virtualhost']).sort.uniq
+    vhost_resources = scope.function_titles_for_restype_in_environment([@environment, 'webserver::virtualhost']).sort.uniq
 
-    vhost_definitions.each do |vhost_definition|
-        vhost_parameters = vhost_definition['parameters']
-        vhost_name = vhost_parameters['name']
+    vhosts = []
+    vhost_resources.each do |node,definitions|
 -%>
-# vhost: <%= vhost_name %>
+# node: <%= node %>
+<%
+        definitions.each do |definition|
+-%>
+#     vhost: <%= definition['title'] %>
+<%
+            vhosts << definition['title'] unless vhosts.include?(definition['title'])
+        end
+    end
+-%>
+
+global
+    log syslog.lhm.klab.cc local0
+
+    user haproxy
+    group haproxy
+
+    daemon
+
+    maxconn 4096
+
+    ssl-default-bind-ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-ECDSA-RC4-SHA:AES128:AES256:RC4-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK
+
+    ssl-default-bind-options no-sslv3 no-tlsv10 no-tlsv11
+    #ssl-default-server-ciphers
+
+    stats socket /var/tmp/haproxy.sock mode 600 level admin
+
+    tune.ssl.default-dh-param 1024
+
+defaults
+    mode http
+
+    timeout http-request 5s
+    timeout connect 5s
+    timeout client 10s
+    timeout server 30s
+
+frontend http
+    mode http
+    bind *:80
+
+    stats enable
+    stats uri /
+
+    reqadd X-Forwarded-Proto:\ http
+
+frontend http-sni
+    mode http
+
+    log global
+
+    option dontlog-normal
+    option forwardfor
+    option httplog
+    option http-server-close
+
+    bind *:443 ssl crt /etc/pki/tls/private/lhm.klab.cc.pem
+
+<%
+    vhosts.sort.each do |vhost|
+-%>
+    acl sni_<%= vhost %> ssl_fc_sni -i <%= vhost %>
 <%
     end
 -%>
+
+<%
+    vhosts.sort.each do |vhost|
+-%>
+    use_backend https_<%= vhost %> if sni_<%= vhost %>
+<%
+    end
+-%>
+
+    default_backend https_default
+
+<%
+    vhosts.sort.each do |vhost|
+
+        nodes = scope.function_titles_for_restype_in_environment([@environment, 'webserver::virtualhost["' + vhost + '"]']).sort.uniq
+-%>
+
+backend https_<%= vhost %>
+    mode http
+
+    balance leastconn
+
+    option httpchk
+
+<%
+        nodes.each do |node,definitions|
+
+            ipaddress = scope.function_query_nodes(['fqdn="' + node + '"', 'ipaddress'])
+-%>
+    server <%= node -%> <%= ipaddress -%>:443 check ssl verify none
+<%
+        end
+    end
+-%>
+
+backend https_default
+    mode http
+
+    balance leastconn
+
+    option httpchk
+
+    server www10    10.10.20.10:443 check ssl verify none
+    server www11    10.10.20.11:443 check ssl verify none
