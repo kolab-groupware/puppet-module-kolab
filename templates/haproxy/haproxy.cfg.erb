@@ -1,12 +1,12 @@
 # Managed by Puppet
-# from ./haproxy/templates/haproxy.cfg.erb
+# from modules/kolab/templates/haproxy/haproxy.cfg.erb
 
 <%
 
     #vhosts = scope.function_titles_for_restype_in_environment([@environment, 'webserver::virtualhost']).sort.uniq
     vhosts = scope.function_titles_for_restype_in_environment(['production', 'webserver::virtualhost']).sort.uniq
 
-    foreach vhosts do |vhost|
+    vhosts.each do |vhost|
 -%>
 # vhost: <%= vhost['name'] %>
 <%
