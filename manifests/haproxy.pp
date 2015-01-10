@@ -7,8 +7,7 @@ class kolab::haproxy {
 
     file { "/etc/haproxy/haproxy.cfg-from-tpl":
         content => template('kolab/haproxy/haproxy.cfg.erb'),
-        require => Package["haproxy"],
-        notify => Service["haproxy"]
+        require => Package["haproxy"]
     }
 
     package { "haproxy":
