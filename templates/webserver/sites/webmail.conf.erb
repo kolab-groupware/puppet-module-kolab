@@ -15,7 +15,8 @@
     DocumentRoot /usr/share/roundcubemail/public_html/
 
     ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
-    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined env=!prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined_prx env=prx
 
     <ifModule mod_rewrite.c>
         RewriteEngine On
@@ -42,8 +43,10 @@
     DocumentRoot /usr/share/roundcubemail/public_html/
 
     ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
-    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
-    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined env=!prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined_prx env=prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b" env=!prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/webmail.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %{X-Forwarded-For}i %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b" env=prx
 
     <ifModule mod_rewrite.c>
         RewriteEngine On

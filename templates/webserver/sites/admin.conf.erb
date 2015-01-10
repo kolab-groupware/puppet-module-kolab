@@ -1,5 +1,5 @@
 # Managed by Puppet
-# from modules/kolab/templates/webserver/sites/webmail.conf.erb
+# from modules/kolab/templates/webserver/sites/admin.conf.erb
 #
 <%
     vhost_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
@@ -13,7 +13,8 @@
     DocumentRoot /usr/share/kolab-webadmin/public_html/
 
     ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
-    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined env=!prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined_prx env=prx
 
     RewriteEngine On
     RewriteRule ^/(.*)$ https://admin.<%= vhost_domain -%>/$1 [R,L]
@@ -52,8 +53,10 @@
     DocumentRoot /usr/share/kolab-webadmin/public_html/
 
     ErrorLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-error_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-error_log.%Y-%m-%d 86400"
-    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined
-    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined env=!prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-access_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-access_log.%Y-%m-%d 86400" combined_prx env=prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b" env=!prx
+    CustomLog "|/usr/sbin/rotatelogs -L /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log -f -l /var/log/httpd/admin.<%= vhost_domain -%>-ssl_log.%Y-%m-%d 86400" "%t %{X-Forwarded-For}i %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b" env=prx
 
     <ifModule mod_headers.c>
         Header set Strict-Transport-Security "max-age=16070400; includeSubDomains"
