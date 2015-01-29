@@ -217,8 +217,61 @@ class kolab::webserver::common inherits kolab::common {
             ]
     }
 
+    # A reasonable minimal set of modules
+    if (!defined(Webserver::Module::Enable["mod_alias"])) {
+        @webserver::module::enable { "mod_alias": }
+    }
+
     if (!defined(Webserver::Module::Enable["mod_authz_core"])) {
         @webserver::module::enable { "mod_authz_core": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_authz_host"])) {
+        @webserver::module::enable { "mod_authz_host": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_deflate"])) {
+        @webserver::module::enable { "mod_deflate": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_dir"])) {
+        @webserver::module::enable { "mod_dir": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_env"])) {
+        @webserver::module::enable { "mod_env": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_expires"])) {
+        @webserver::module::enable { "mod_expires": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_headers"])) {
+        @webserver::module::enable { "mod_headers": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_log_config"])) {
+        @webserver::module::enable { "mod_log_config": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_mime"])) {
+        @webserver::module::enable { "mod_mime": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_reqtimeout"])) {
+        @webserver::module::enable { "mod_reqtimeout": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_rewrite"])) {
+        @webserver::module::enable { "mod_rewrite": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_security"])) {
+        @webserver::module::enable { "mod_security": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_setenvif"])) {
+        @webserver::module::enable { "mod_setenvif": }
     }
 
     if (!defined(Webserver::Module::Enable["mod_slotmem_shm"])) {
@@ -231,6 +284,10 @@ class kolab::webserver::common inherits kolab::common {
 
     if (!defined(Webserver::Module::Enable["mod_ssl"])) {
         @webserver::module::enable { "mod_ssl": }
+    }
+
+    if (!defined(Webserver::Module::Enable["mod_status"])) {
+        @webserver::module::enable { "mod_status": }
     }
 
     if (!defined(Webserver::Module::Enable["mod_unixd"])) {
