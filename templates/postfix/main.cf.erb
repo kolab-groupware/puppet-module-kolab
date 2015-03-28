@@ -202,20 +202,23 @@ relayhost = [smtp.<%= @domain -%>]
 relayhost = [smtp.<%= @domain -%>]
 smtpd_sender_login_maps = $relay_recipient_maps
 
-submission_sender_restrictions =
-    reject_non_fqdn_sender,
-    reject_unlisted_sender,
+smtpd_sasl_auth_enable = yes
+
+submission_sender_restrictions = reject_non_fqdn_sender,
     check_policy_service unix:private/submission_policy,
     permit_sasl_authenticated,
     reject
 
-submission_recipient_restrictions =
-    check_policy_service unix:private/submission_policy,
+submission_recipient_restrictions = check_policy_service unix:private/submission_policy,
     permit_sasl_authenticated,
     reject
 
-smtpd_recipient_restrictions =
-    permit_mynetworks,
+submission_data_restrictions = check_policy_service unix:private/submission_policy
+
+smtpd_sender_restrictions = permit_mynetworks,
+    check_policy_service unix:private/sender_policy_incoming
+
+smtpd_recipient_restrictions = permit_mynetworks,
     reject_unauth_pipelining,
     reject_rbl_client zen.spamhaus.org,
     reject_non_fqdn_recipient,
@@ -225,14 +228,8 @@ smtpd_recipient_restrictions =
     check_policy_service unix:private/recipient_policy_incoming,
     permit
 
-submission_data_restrictions =
-    check_policy_service unix:private/submission_policy
+smtpd_data_restrictions = check_policy_service unix:private/submission_policy
 
-smtpd_sasl_auth_enable = yes
-
-smtpd_sender_restrictions =
-    permit_mynetworks,
-    check_policy_service unix:private/sender_policy_incoming
 <% elsif extmx_outs.include?(@fqdn) then -%>
 <% else %>
 relayhost = [smtp.<%= @domain -%>]

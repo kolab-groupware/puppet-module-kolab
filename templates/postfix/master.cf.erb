@@ -61,9 +61,9 @@ submission          inet        n       -       n       -       -       smtpd
     -o smtpd_sasl_auth_enable=yes
     -o smtpd_sasl_authenticated_header=yes
     -o smtpd_client_restrictions=permit_sasl_authenticated,reject
-    -o smtpd_data_restrictions=$submission_data_restrictions
-    -o smtpd_recipient_restrictions=$submission_recipient_restrictions
     -o smtpd_sender_restrictions=$submission_sender_restrictions
+    -o smtpd_recipient_restrictions=$submission_recipient_restrictions
+    -o smtpd_data_restrictions=$submission_data_restrictions
 <% end -%>
 #smtps               inet        n       -       n       -       -       smtpd
 #    -o syslog_name=postfix/smtps
@@ -133,6 +133,7 @@ smtp-amavis         unix        -       -       n       -       6       smtp
     -o smtpd_helo_restrictions=
     -o smtpd_sender_restrictions=
     -o smtpd_recipient_restrictions=permit_mynetworks,reject
+    -o smtpd_data_restrictions=
     -o mynetworks=127.0.0.0/8
     -o smtpd_authorized_xforward_hosts=127.0.0.0/8
 <% end %>
@@ -155,21 +156,12 @@ smtp-wallace        unix        -       -       n       -       3       smtp
     -o smtpd_helo_restrictions=
     -o smtpd_sender_restrictions=
     -o smtpd_recipient_restrictions=permit_mynetworks,reject
+    -o smtpd_data_restrictions=
     -o mynetworks=127.0.0.0/8
     -o smtpd_authorized_xforward_hosts=127.0.0.0/8
 <% end %>
-recipient_policy    unix        -       n       n       -       -       spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-recipient
-
-recipient_policy_incoming unix  -       n       n       -       -       spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-recipient --allow-unauthenticated
-
-sender_policy       unix        -       n       n       -       -       spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-sender
-
-sender_policy_incoming unix     -       n       n       -       -       spawn
-    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-sender --allow-unauthenticated
+incoming_policy     unix        -       n       n       -       -       spawn
+    user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-recipient --verify-sender --allow-unauthenticated
 
 submission_policy   unix        -       n       n       -       -       spawn
     user=kolab-n argv=/usr/libexec/postfix/kolab_smtp_access_policy --verify-sender --verify-recipient
-
