@@ -53,6 +53,7 @@ class kolab::params (
             $roundcubemail_db_dsnr = undef,
 
             $smtp_scheme = undef,
+            $mynetworks = [ '127.0.0.0/8', '[::1]/128' ],
 
             $ldap_bind_dn = "cn=Directory Manager",
             $ldap_bind_pw = undef,

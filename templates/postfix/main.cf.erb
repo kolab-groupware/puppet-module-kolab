@@ -4,6 +4,8 @@
 
     primary_domain = scope.lookupvar("kolab::params::kolab_primary_domain")
 
+    mynetworks = scope.lookupvar("kolab::params::mynetworks")
+
     # Excempt the hosted domain that is special
     hosteddomains = hosteddomains - [ primary_domain ]
 
@@ -95,7 +97,7 @@ mail_owner = postfix
 default_privs = nobody
 inet_interfaces = all
 <% if intmxs.include?(@fqdn) or extmx_outs.include?(@fqdn) then -%>
-mynetworks = 127.0.0.0/8
+mynetworks = <% mynetworks.join(" ") -%>
 mynetworks_style = subnet
 <% else %>
 mynetworks = 127.0.0.0/8
